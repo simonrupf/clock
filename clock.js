@@ -11,6 +11,12 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     }
 
+    function setStyles(element, styles) {
+        for (const [key, value] of Object.entries(styles)) {
+            element.style[key] = value;
+        }
+    }
+
     function showAbout(event) {
         event.stopPropagation();
         hideAll();
@@ -34,9 +40,11 @@ document.addEventListener('DOMContentLoaded', function() {
                 top = 0;
             }
         }
-        timeOptionsElement.style.position = 'absolute';
-        timeOptionsElement.style.left = left + 'px';
-        timeOptionsElement.style.top = top + 'px';
+        setStyles(timeOptionsElement, {
+            position: 'absolute',
+            left: left + 'px',
+            top: top + 'px'
+        });
     }
 
     function showTimeAlignOptions() {
@@ -65,15 +73,20 @@ document.addEventListener('DOMContentLoaded', function() {
             document.documentElement,
             document.body
         ].forEach(function(element) {
-            element.style.height = '100%';
-            element.style.margin = '0';
+            setStyles(element, {
+                height: '100%',
+                margin: '0'
+            });
         });
-        document.body.style.cursor = 'pointer';
-
-        document.body.style.display = 'flex';
-        timeOptionsElement.style.margin = '0';
-        timeOptionsElement.style['background-color'] = 'rgba(255, 255, 255, 0.7)';
-        timeOptionsElement.style['border-radius'] = '1em';
+        setStyles(document.body, {
+            cursor: 'pointer',
+            display: 'flex'
+        });
+        setStyles(timeOptionsElement, {
+            margin: '0',
+            'background-color': 'rgba(255, 255, 255, 0.7)',
+            'border-radius': '1em'
+        });
 
         [
             'justify-content',
@@ -126,16 +139,14 @@ document.addEventListener('DOMContentLoaded', function() {
                 onclick: function(event) {
                     updateAlignmentEvent(event, 'start', 'start');
                 }
-            },
-            {
+            },{
                 symbol: '⭱',
                 hAlign: 'center',
                 vAlign: 'top',
                 onclick: function(event) {
                     updateAlignmentEvent(event, 'center', 'start');
                 }
-            },
-            {
+            },{
                 symbol: '⭷',
                 hAlign: 'left',
                 vAlign: 'top',
@@ -143,8 +154,7 @@ document.addEventListener('DOMContentLoaded', function() {
                     updateAlignmentEvent(event, 'end', 'start');
                 }
             }
-        ],
-        [
+        ],[
             {
                 symbol: '⭰',
                 hAlign: 'left',
@@ -152,16 +162,14 @@ document.addEventListener('DOMContentLoaded', function() {
                 onclick: function(event) {
                     updateAlignmentEvent(event, 'start', 'center');
                 }
-            },
-            {
+            },{
                 symbol: '✛',
                 hAlign: 'center',
                 vAlign: 'middle',
                 onclick: function(event) {
                     updateAlignmentEvent(event, 'center', 'center');
                 }
-            },
-            {
+            },{
                 symbol: '⭲',
                 hAlign: 'left',
                 vAlign: 'middle',
@@ -169,8 +177,7 @@ document.addEventListener('DOMContentLoaded', function() {
                     updateAlignmentEvent(event, 'end', 'center');
                 }
             }
-        ],
-        [
+        ],[
             {
                 symbol: '⭹',
                 hAlign: 'left',
@@ -178,16 +185,14 @@ document.addEventListener('DOMContentLoaded', function() {
                 onclick: function(event) {
                     updateAlignmentEvent(event, 'start', 'end');
                 }
-            },
-            {
+            },{
                 symbol: '⭳',
                 hAlign: 'center',
                 vAlign: 'bottom',
                 onclick: function(event) {
                     updateAlignmentEvent(event, 'center', 'end');
                 }
-            },
-            {
+            },{
                 symbol: '⭸',
                 hAlign: 'left',
                 vAlign: 'bottom',
@@ -201,8 +206,10 @@ document.addEventListener('DOMContentLoaded', function() {
         row.forEach(function(cell) {
             const alignTableDash = tableDash.cloneNode();
             alignTableDash.textContent = cell.symbol;
-            alignTableDash.style['text-align'] = cell.hAlign;
-            alignTableDash.style['vertical-align'] = cell.vAlign;
+            setStyles(alignTableDash, {
+                'text-align': cell.hAlign,
+                'vertical-align': cell.vAlign
+            });
             alignTableDash.onclick = cell.onclick;
             alignTableRow.appendChild(alignTableDash);
         });
