@@ -166,6 +166,12 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     }
 
+    function updateSize() {
+        setPersistentStyles(timeElement, {
+            'font-size': timeSizeInputElement.value + timeSizeSelectElement.value
+        });
+    }
+
     function updateTime() {
         timeElement.textContent = (new Date()).toLocaleTimeString();
     }
@@ -182,7 +188,8 @@ document.addEventListener('DOMContentLoaded', function() {
             ['align-items', 'center', document.body],
             ['justify-content', 'center', document.body],
             ['color', '#000000', timeElement],
-            ['background-color', '#ffffff', document.body]
+            ['background-color', '#ffffff', document.body],
+            ['font-size', '1em', timeElement]
         ]) {
             let value = localStorage.getItem(key);
             if (!value) {
@@ -195,6 +202,7 @@ document.addEventListener('DOMContentLoaded', function() {
         // text
         timeAlignElement.textContent = 'Alignment…';
         backgroundColorLabelElement.textContent = timeColorLabelElement.textContent = 'Color…';
+        timeSizeLabelElement.textContent = 'Size…';
         aboutOptionElement.textContent = 'About…';
 
         // color picker
@@ -211,6 +219,28 @@ document.addEventListener('DOMContentLoaded', function() {
             colorElement.appendChild(inputElement);
         }
 
+        // size
+        timeSizeLabelElement.setAttribute('for', 'timeSizeAmount');
+        timeSizeInputElement.setAttribute('id', 'timeSizeAmount');
+        timeSizeInputElement.setAttribute('type', 'number');
+        timeSizeInputElement.setAttribute('min', '1');
+        timeSizeInputElement.style.width = '3em';
+        timeSizeInputElement.style['text-align'] = 'right';
+        timeSizeSelectElement.setAttribute('id', 'timeSizeUnit');
+        for (const unit of ['em', 'px', 'pt', 'cm', 'mm', 'in', 'pc', '%']) {
+            const timeSizeOptionElement = document.createElement('option');
+            timeSizeOptionElement.textContent = unit;
+            timeSizeOptionElement.value = unit;
+            timeSizeSelectElement.appendChild(timeSizeOptionElement);
+        }
+        const fontSize = localStorage.getItem('font-size').match(/[a-z%]+|[0-9]+/g);
+        timeSizeInputElement.value = fontSize[0];
+        timeSizeSelectElement.value = fontSize[1];
+        timeSizeElement.appendChild(timeSizeLabelElement);
+        timeSizeElement.appendChild(document.createElement('br'));
+        timeSizeElement.appendChild(timeSizeInputElement);
+        timeSizeElement.appendChild(timeSizeSelectElement);
+
         // menus
         timeAlignElement.appendChild(timeAlignTableElement);
         for (const [optionsElement, options] of [
@@ -221,7 +251,8 @@ document.addEventListener('DOMContentLoaded', function() {
             ], [
                 timeOptionsElement, [
                     timeAlignElement,
-                    timeColorElement
+                    timeColorElement,
+                    timeSizeElement
                 ]
             ]
         ]) {
@@ -242,7 +273,7 @@ document.addEventListener('DOMContentLoaded', function() {
             display: 'flex'
         },
         options: {
-            margin: '0',
+            margin: '1em',
             padding: '0.5em 2em',
             'background-color': 'rgba(255, 255, 255, 0.7)',
             'border-radius': '0.2em'
@@ -269,6 +300,10 @@ document.addEventListener('DOMContentLoaded', function() {
     const timeColorElement = document.createElement('li');
     const timeColorLabelElement = document.createElement('label');
     const timeColorInputElement = document.createElement('input');
+    const timeSizeElement = document.createElement('li');
+    const timeSizeLabelElement = document.createElement('label');
+    const timeSizeInputElement = document.createElement('input');
+    const timeSizeSelectElement = document.createElement('select');
     const aboutOptionElement = document.createElement('li');
 
     // prepare events
@@ -277,10 +312,12 @@ document.addEventListener('DOMContentLoaded', function() {
         [aboutElement, showElement(document.documentElement)],
         [aboutOptionElement, showElement(aboutElement)],
         [backgroundColorElement, showElement(backgroundColorInputElement)],
+        [backgroundOptionsElement, event => event.stopPropagation()],
         [document.body, showOptions(backgroundOptionsElement)],
         [timeElement, showOptions(timeOptionsElement)],
         [timeAlignElement, showTimeAlignOptions],
-        [timeColorElement, showElement(timeColorInputElement)]
+        [timeColorElement, showElement(timeColorInputElement)],
+        [timeOptionsElement, event => event.stopPropagation()]
     ]) {
         element.onclick = callback;
     }
@@ -289,6 +326,9 @@ document.addEventListener('DOMContentLoaded', function() {
         [timeColorInputElement, timeElement, timeColorInputElement, 'color']
     ]) {
         element.onchange = updateColor(target, source, itemKey);
+    }
+    for (const element of [timeSizeInputElement, timeSizeSelectElement]) {
+        element.onchange = updateSize;
     }
 
     // load DOM
