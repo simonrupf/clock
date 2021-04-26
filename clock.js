@@ -101,18 +101,18 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     }
 
-    const unorderedList = document.createElement('ul');
-    const listItem = document.createElement('li');
-    const table = document.createElement('table');
-    const tableRow = document.createElement('tr');
-    const tableDash = document.createElement('td');
+    const nodePalette = {
+        li: document.createElement('li'),
+        tr: document.createElement('tr'),
+        td: document.createElement('td')
+    };
 
     const aboutElement = document.body.childNodes[1];
     const timeElement = document.createElement('span');
-    const timeOptionsElement = unorderedList.cloneNode();
-    const timeAlignElement = listItem.cloneNode();
-    const timeAlignTableElement = table.cloneNode();
-    const aboutOptionElement = listItem.cloneNode();
+    const timeOptionsElement = document.createElement('ul');
+    const timeAlignElement = nodePalette.li.cloneNode();
+    const timeAlignTableElement = document.createElement('table');
+    const aboutOptionElement = nodePalette.li.cloneNode();
 
     // prepare events
     setInterval(updateTime, 1000);
@@ -202,9 +202,9 @@ document.addEventListener('DOMContentLoaded', function() {
             }
         ]
     ].forEach(function(row) {
-        const alignTableRow = tableRow.cloneNode();
+        const alignTableRow = nodePalette.tr.cloneNode();
         row.forEach(function(cell) {
-            const alignTableDash = tableDash.cloneNode();
+            const alignTableDash = nodePalette.td.cloneNode();
             alignTableDash.textContent = cell.symbol;
             setStyles(alignTableDash, {
                 'text-align': cell.hAlign,
