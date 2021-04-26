@@ -5,6 +5,7 @@ document.addEventListener('DOMContentLoaded', function() {
         for (const element of [
             aboutElement,
             timeAlignTableElement,
+            timeColorInputElement,
             timeOptionsElement
         ]) {
             element.style.display = 'none'
@@ -13,6 +14,13 @@ document.addEventListener('DOMContentLoaded', function() {
 
     function setStyles(element, styles) {
         for (const [key, value] of Object.entries(styles)) {
+            element.style[key] = value;
+        }
+    }
+
+    function setPersistentStyles(element, styles) {
+        for (const [key, value] of Object.entries(styles)) {
+            localStorage.setItem(key, value);
             element.style[key] = value;
         }
     }
@@ -52,16 +60,25 @@ document.addEventListener('DOMContentLoaded', function() {
         timeAlignTableElement.style.display = 'block';
     }
 
-    function updateAlignmentEvent(event, horizontal, vertical) {
+    function showTimeColorOptions() {
+        event.stopPropagation();
+        timeColorInputElement.style.display = 'block';
+    }
+
+    function updateAlignment(event, horizontal, vertical) {
         event.stopPropagation();
         hideAll();
-        for (const [key, value] of Object.entries({
+        setPersistentStyles(document.body, {
             'justify-content': horizontal,
             'align-items': vertical
-        })) {
-            localStorage.setItem(key, value);
-            document.body.style[key] = value;
-        }
+        });
+    }
+
+    function updateColor(event) {
+        hideAll();
+        setPersistentStyles(timeElement, {
+            color: timeColorInputElement.value
+        });
     }
 
     function updateTime() {
@@ -91,21 +108,21 @@ document.addEventListener('DOMContentLoaded', function() {
                     hAlign: 'left',
                     vAlign: 'top',
                     onclick: function(event) {
-                        updateAlignmentEvent(event, 'start', 'start');
+                        updateAlignment(event, 'start', 'start');
                     }
                 },{
                     symbol: '⭱',
                     hAlign: 'center',
                     vAlign: 'top',
                     onclick: function(event) {
-                        updateAlignmentEvent(event, 'center', 'start');
+                        updateAlignment(event, 'center', 'start');
                     }
                 },{
                     symbol: '⭷',
                     hAlign: 'left',
                     vAlign: 'top',
                     onclick: function(event) {
-                        updateAlignmentEvent(event, 'end', 'start');
+                        updateAlignment(event, 'end', 'start');
                     }
                 }
             ],[
@@ -114,21 +131,21 @@ document.addEventListener('DOMContentLoaded', function() {
                     hAlign: 'left',
                     vAlign: 'middle',
                     onclick: function(event) {
-                        updateAlignmentEvent(event, 'start', 'center');
+                        updateAlignment(event, 'start', 'center');
                     }
                 },{
                     symbol: '✛',
                     hAlign: 'center',
                     vAlign: 'middle',
                     onclick: function(event) {
-                        updateAlignmentEvent(event, 'center', 'center');
+                        updateAlignment(event, 'center', 'center');
                     }
                 },{
                     symbol: '⭲',
                     hAlign: 'left',
                     vAlign: 'middle',
                     onclick: function(event) {
-                        updateAlignmentEvent(event, 'end', 'center');
+                        updateAlignment(event, 'end', 'center');
                     }
                 }
             ],[
@@ -137,21 +154,21 @@ document.addEventListener('DOMContentLoaded', function() {
                     hAlign: 'left',
                     vAlign: 'bottom',
                     onclick: function(event) {
-                        updateAlignmentEvent(event, 'start', 'end');
+                        updateAlignment(event, 'start', 'end');
                     }
                 },{
                     symbol: '⭳',
                     hAlign: 'center',
                     vAlign: 'bottom',
                     onclick: function(event) {
-                        updateAlignmentEvent(event, 'center', 'end');
+                        updateAlignment(event, 'center', 'end');
                     }
                 },{
                     symbol: '⭸',
                     hAlign: 'left',
                     vAlign: 'bottom',
                     onclick: function(event) {
-                        updateAlignmentEvent(event, 'end', 'end');
+                        updateAlignment(event, 'end', 'end');
                     }
                 }
             ]
@@ -167,20 +184,22 @@ document.addEventListener('DOMContentLoaded', function() {
         setStyles(document.body, styles.body);
         setStyles(timeOptionsElement, styles.options);
 
-        for (const key of [
-            'justify-content',
-            'align-items'
+        for (const [key, defaultValue, element] of [
+            ['align-items', 'center', document.body],
+            ['justify-content', 'center', document.body],
+            ['color', '#000000', timeElement]
         ]) {
             let value = localStorage.getItem(key);
             if (!value) {
-                localStorage.setItem(key, 'center');
-                value = 'center';
+                localStorage.setItem(key, defaultValue);
+                value = defaultValue;
             }
-            document.body.style[key] = value;
+            element.style[key] = value;
         }
 
         // text
         timeAlignElement.textContent = 'Alignment…';
+        timeColorLabelElement.textContent = 'Color…';
         aboutOptionElement.textContent = 'About…';
 
         // alignment table
@@ -200,9 +219,19 @@ document.addEventListener('DOMContentLoaded', function() {
         }
         timeAlignElement.appendChild(timeAlignTableElement);
 
+        // color picker
+        timeColorLabelElement.setAttribute('for', 'timeColor');
+        timeColorInputElement.setAttribute('id', 'timeColor');
+        timeColorInputElement.setAttribute('type', 'color');
+        timeColorInputElement.value = localStorage.getItem('color');
+        timeColorElement.appendChild(timeColorLabelElement);
+        timeColorElement.appendChild(document.createElement('br'));
+        timeColorElement.appendChild(timeColorInputElement);
+
         // menus
         for (const element of [
             timeAlignElement,
+            timeColorElement,
             aboutOptionElement
         ]) {
             timeOptionsElement.appendChild(element);
@@ -222,6 +251,7 @@ document.addEventListener('DOMContentLoaded', function() {
     const timeAlignElement = nodePalette.li.cloneNode();
     const timeAlignTableElement = document.createElement('table');
     const timeColorElement = nodePalette.li.cloneNode();
+    const timeColorLabelElement = document.createElement('label');
     const timeColorInputElement = document.createElement('input');
     const aboutOptionElement = nodePalette.li.cloneNode();
 
@@ -230,12 +260,13 @@ document.addEventListener('DOMContentLoaded', function() {
     for (const [element, callback] of [
         [timeElement, showTimeOptions],
         [timeAlignElement, showTimeAlignOptions],
-//        [timeColorElement, showTimeColorOptions],
+        [timeColorElement, showTimeColorOptions],
         [aboutOptionElement, showAbout],
         [document.body, hideAll]
     ]) {
         element.onclick = callback;
     }
+    timeColorInputElement.onchange = updateColor;
 
     // load DOM
     updateTime();
