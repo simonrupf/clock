@@ -12,9 +12,11 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     }
 
-    function setStyles(element, styles) {
-        for (const [key, value] of Object.entries(styles)) {
-            element.style[key] = value;
+    function setStyles(elements, styles) {
+        for (const element of elements) {
+            for (const [key, value] of Object.entries(styles)) {
+                element.style[key] = value;
+            }
         }
     }
 
@@ -48,7 +50,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 top = 0;
             }
         }
-        setStyles(timeOptionsElement, {
+        setStyles([timeOptionsElement], {
             position: 'absolute',
             left: left + 'px',
             top: top + 'px'
@@ -118,21 +120,22 @@ document.addEventListener('DOMContentLoaded', function() {
             for (const cell of row) {
                 const alignTableDash = nodePalette.td.cloneNode();
                 alignTableDash.textContent = cell.symbol;
-                setStyles(alignTableDash, {
+                const dashStyles = {
                     padding: '0 0.2em',
                     'text-align': alignmentMap[cell.hAlign][0],
                     'vertical-align': alignmentMap[cell.vAlign][1]
-                });
+                };
                 if (
                     horizontal == cell.hAlign &&
                     vertical == cell.vAlign
                 ) {
-                    setStyles(alignTableDash, {
+                    Object.assign(dashStyles, {
                         color: 'white',
                         'background-color': 'black',
                         'border-radius': '0.2em'
                     });
                 }
+                setStyles([alignTableDash], dashStyles);
                 alignTableDash.onclick = updateAlignment(cell.hAlign, cell.vAlign);
                 alignTableRow.appendChild(alignTableDash);
             }
@@ -186,19 +189,9 @@ document.addEventListener('DOMContentLoaded', function() {
             }
         };
         // styles
-        for (const element of [
-            document.documentElement,
-            document.body
-        ]) {
-            setStyles(element, styles.root);
-        }
-        setStyles(document.body, styles.body);
-        for (const element of [
-            aboutElement,
-            timeOptionsElement
-        ]) {
-            setStyles(element, styles.options);
-        }
+        setStyles([document.documentElement, document.body], styles.root);
+        setStyles([document.body], styles.body);
+        setStyles([aboutElement, timeOptionsElement], styles.options);
 
         for (const [key, defaultValue, element] of [
             ['align-items', 'center', document.body],
