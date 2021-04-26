@@ -116,9 +116,9 @@ document.addEventListener('DOMContentLoaded', function() {
         // clear table and re-draw it
         timeAlignTableElement.textContent = '';
         for (const row of alignmentTable) {
-            const alignTableRow = nodePalette.tr.cloneNode();
+            const alignTableRow = document.createElement('tr');
             for (const cell of row) {
-                const alignTableDash = nodePalette.td.cloneNode();
+                const alignTableDash = document.createElement('td');
                 alignTableDash.textContent = cell.symbol;
                 const dashStyles = Object.assign({}, styles.dash);
                 dashStyles['text-align'] = alignmentMap[cell.hAlign][0];
@@ -211,11 +211,6 @@ document.addEventListener('DOMContentLoaded', function() {
         document.body.appendChild(timeOptionsElement);
     }
 
-    const nodePalette = {
-        li: document.createElement('li'),
-        tr: document.createElement('tr'),
-        td: document.createElement('td')
-    };
     const styles = {
         root: {
             height: '100%',
@@ -244,12 +239,12 @@ document.addEventListener('DOMContentLoaded', function() {
     const aboutElement = document.body.childNodes[1];
     const timeElement = document.createElement('span');
     const timeOptionsElement = document.createElement('ul');
-    const timeAlignElement = nodePalette.li.cloneNode();
+    const timeAlignElement = document.createElement('li');
     const timeAlignTableElement = document.createElement('table');
-    const timeColorElement = nodePalette.li.cloneNode();
+    const timeColorElement = document.createElement('li');
     const timeColorLabelElement = document.createElement('label');
     const timeColorInputElement = document.createElement('input');
-    const aboutOptionElement = nodePalette.li.cloneNode();
+    const aboutOptionElement = document.createElement('li');
 
     // prepare events
     setInterval(updateTime, 1000);
