@@ -5,6 +5,7 @@ document.addEventListener('DOMContentLoaded', function() {
         for (const element of [
             aboutElement,
             backgroundColorInputElement,
+            backgroundImageInputElement,
             backgroundOptionsElement,
             timeAlignTableElement,
             timeColorInputElement,
@@ -12,6 +13,11 @@ document.addEventListener('DOMContentLoaded', function() {
         ]) {
             element.style.display = 'none'
         }
+    }
+
+    function hideAllEvent(event) {
+        event.stopPropagation();
+        hideAll();
     }
 
     function setStyles(elements, styles) {
@@ -29,10 +35,14 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     }
 
+    function showAbout(event) {
+        hideAllEvent(event);
+        aboutElement.style.display = 'block';
+    }
+
     function showElement(element) {
         return function(event) {
             event.stopPropagation();
-            hideAll();
             element.style.display = 'block';
         }
     }
@@ -157,6 +167,12 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     }
 
+    function updateBackgroundImage() {
+        setPersistentStyles(document.body, {
+            'background-image': 'url("' + backgroundImageInputElement.value + '")'
+        });
+    }
+
     function updateColor(targetElement, colorPickerElement, itemKey) {
         return function(event) {
             hideAll();
@@ -189,6 +205,7 @@ document.addEventListener('DOMContentLoaded', function() {
             ['justify-content', 'center', document.body],
             ['color', '#000000', timeElement],
             ['background-color', '#ffffff', document.body],
+            ['background-image', '', document.body],
             ['font-size', '1em', timeElement]
         ]) {
             let value = localStorage.getItem(key);
@@ -202,7 +219,8 @@ document.addEventListener('DOMContentLoaded', function() {
         // text
         timeAlignElement.textContent = 'Alignment…';
         backgroundColorLabelElement.textContent = timeColorLabelElement.textContent = 'Color…';
-        timeSizeLabelElement.textContent = 'Size…';
+        backgroundImageLabelElement.textContent = 'Image URL…';
+        timeSizeLabelElement.textContent = 'Size:';
         aboutOptionElement.textContent = 'About…';
 
         // color picker
@@ -218,6 +236,16 @@ document.addEventListener('DOMContentLoaded', function() {
             colorElement.appendChild(document.createElement('br'));
             colorElement.appendChild(inputElement);
         }
+
+        // background image
+        backgroundImageLabelElement.setAttribute('for', 'backgroundImage');
+        backgroundImageInputElement.setAttribute('id', 'backgroundImage');
+        backgroundImageInputElement.setAttribute('type', 'url');
+        backgroundImageInputElement.setAttribute('pattern', 'https://.*');
+        backgroundImageInputElement.setAttribute('placeholder', 'https://example.com');
+        backgroundImageElement.appendChild(backgroundImageLabelElement);
+        backgroundImageElement.appendChild(document.createElement('br'));
+        backgroundImageElement.appendChild(backgroundImageInputElement);
 
         // size
         timeSizeLabelElement.setAttribute('for', 'timeSizeAmount');
@@ -246,7 +274,8 @@ document.addEventListener('DOMContentLoaded', function() {
         for (const [optionsElement, options] of [
             [
                 backgroundOptionsElement, [
-                    backgroundColorElement
+                    backgroundColorElement,
+                    backgroundImageElement
                 ]
             ], [
                 timeOptionsElement, [
@@ -293,6 +322,9 @@ document.addEventListener('DOMContentLoaded', function() {
     const backgroundColorElement = document.createElement('li');
     const backgroundColorLabelElement = document.createElement('label');
     const backgroundColorInputElement = document.createElement('input');
+    const backgroundImageElement = document.createElement('li');
+    const backgroundImageLabelElement = document.createElement('label');
+    const backgroundImageInputElement = document.createElement('input');
     const timeElement = document.createElement('span');
     const timeOptionsElement = document.createElement('ul');
     const timeAlignElement = document.createElement('li');
@@ -309,9 +341,10 @@ document.addEventListener('DOMContentLoaded', function() {
     // prepare events
     setInterval(updateTime, 1000);
     for (const [element, callback] of [
-        [aboutElement, showElement(document.documentElement)],
-        [aboutOptionElement, showElement(aboutElement)],
+        [aboutElement, hideAllEvent],
+        [aboutOptionElement, showAbout],
         [backgroundColorElement, showElement(backgroundColorInputElement)],
+        [backgroundImageElement, showElement(backgroundImageInputElement)],
         [backgroundOptionsElement, event => event.stopPropagation()],
         [document.body, showOptions(backgroundOptionsElement)],
         [timeElement, showOptions(timeOptionsElement)],
@@ -330,6 +363,7 @@ document.addEventListener('DOMContentLoaded', function() {
     for (const element of [timeSizeInputElement, timeSizeSelectElement]) {
         element.onchange = updateSize;
     }
+    backgroundImageInputElement.onchange = updateBackgroundImage;
 
     // load DOM
     updateTime();
