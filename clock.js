@@ -120,20 +120,14 @@ document.addEventListener('DOMContentLoaded', function() {
             for (const cell of row) {
                 const alignTableDash = nodePalette.td.cloneNode();
                 alignTableDash.textContent = cell.symbol;
-                const dashStyles = {
-                    padding: '0 0.2em',
-                    'text-align': alignmentMap[cell.hAlign][0],
-                    'vertical-align': alignmentMap[cell.vAlign][1]
-                };
+                const dashStyles = Object.assign({}, styles.dash);
+                dashStyles['text-align'] = alignmentMap[cell.hAlign][0];
+                dashStyles['vertical-align'] = alignmentMap[cell.vAlign][1];
                 if (
                     horizontal == cell.hAlign &&
                     vertical == cell.vAlign
                 ) {
-                    Object.assign(dashStyles, {
-                        color: 'white',
-                        'background-color': 'black',
-                        'border-radius': '0.2em'
-                    });
+                    Object.assign(dashStyles, styles.dashSelected);
                 }
                 setStyles([alignTableDash], dashStyles);
                 alignTableDash.onclick = updateAlignment(cell.hAlign, cell.vAlign);
@@ -172,27 +166,12 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 
     function updateLayout() {
-        const styles = {
-            root: {
-                height: '100%',
-                margin: '0'
-            },
-            body: {
-                cursor: 'pointer',
-                display: 'flex'
-            },
-            options: {
-                margin: '0',
-                padding: '0.5em 2em',
-                'background-color': 'rgba(255, 255, 255, 0.7)',
-                'border-radius': '0.2em'
-            }
-        };
         // styles
         setStyles([document.documentElement, document.body], styles.root);
         setStyles([document.body], styles.body);
         setStyles([aboutElement, timeOptionsElement], styles.options);
 
+        // restore persisted styles
         for (const [key, defaultValue, element] of [
             ['align-items', 'center', document.body],
             ['justify-content', 'center', document.body],
@@ -236,6 +215,30 @@ document.addEventListener('DOMContentLoaded', function() {
         li: document.createElement('li'),
         tr: document.createElement('tr'),
         td: document.createElement('td')
+    };
+    const styles = {
+        root: {
+            height: '100%',
+            margin: '0'
+        },
+        body: {
+            cursor: 'pointer',
+            display: 'flex'
+        },
+        options: {
+            margin: '0',
+            padding: '0.5em 2em',
+            'background-color': 'rgba(255, 255, 255, 0.7)',
+            'border-radius': '0.2em'
+        },
+        dash: {
+            padding: '0 0.2em'
+        },
+        dashSelected: {
+            color: 'white',
+            'background-color': 'black',
+            'border-radius': '0.2em'
+        }
     };
 
     const aboutElement = document.body.childNodes[1];
