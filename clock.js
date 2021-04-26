@@ -2,13 +2,13 @@
 
 document.addEventListener('DOMContentLoaded', function() {
     function hideAll() {
-        [
+        for (const element of [
             aboutElement,
             timeAlignTableElement,
             timeOptionsElement
-        ].forEach(function(element) {
+        ]) {
             element.style.display = 'none'
-        });
+        }
     }
 
     function setStyles(element, styles) {
@@ -69,15 +69,15 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 
     function updateLayout() {
-        [
+        for (const element of [
             document.documentElement,
             document.body
-        ].forEach(function(element) {
+        ]) {
             setStyles(element, {
                 height: '100%',
                 margin: '0'
             });
-        });
+        }
         setStyles(document.body, {
             cursor: 'pointer',
             display: 'flex'
@@ -88,17 +88,17 @@ document.addEventListener('DOMContentLoaded', function() {
             'border-radius': '1em'
         });
 
-        [
+        for (const key of [
             'justify-content',
             'align-items'
-        ].forEach(function(key) {
+        ]) {
             let value = localStorage.getItem(key);
             if (!value) {
                 localStorage.setItem(key, 'center');
                 value = 'center';
             }
             document.body.style[key] = value;
-        });
+        }
     }
 
     const nodePalette = {
@@ -130,7 +130,7 @@ document.addEventListener('DOMContentLoaded', function() {
     timeAlignElement.textContent = 'Alignment…';
     aboutOptionElement.textContent = 'About…';
 
-    [
+    for (const row of [
         [
             {
                 symbol: '⭶',
@@ -201,9 +201,9 @@ document.addEventListener('DOMContentLoaded', function() {
                 }
             }
         ]
-    ].forEach(function(row) {
+    ]) {
         const alignTableRow = nodePalette.tr.cloneNode();
-        row.forEach(function(cell) {
+        for (const cell of row) {
             const alignTableDash = nodePalette.td.cloneNode();
             alignTableDash.textContent = cell.symbol;
             setStyles(alignTableDash, {
@@ -212,16 +212,16 @@ document.addEventListener('DOMContentLoaded', function() {
             });
             alignTableDash.onclick = cell.onclick;
             alignTableRow.appendChild(alignTableDash);
-        });
+        }
         timeAlignTableElement.appendChild(alignTableRow);
-    });
+    }
     timeAlignElement.appendChild(timeAlignTableElement);
 
-    [
+    for (const element of [
         timeAlignElement,
         aboutOptionElement
-    ].forEach(function(element) {
+    ]) {
         timeOptionsElement.appendChild(element);
-    });
+    }
     document.body.appendChild(timeOptionsElement);
 });
