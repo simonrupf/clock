@@ -4,6 +4,8 @@ document.addEventListener('DOMContentLoaded', function() {
     function hideAll() {
         for (const element of [
             aboutElement,
+            backgroundColorInputElement,
+            backgroundOptionsElement,
             timeAlignTableElement,
             timeColorInputElement,
             timeOptionsElement
@@ -27,34 +29,40 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     }
 
-    function showAbout(event) {
-        event.stopPropagation();
-        hideAll();
-        aboutElement.style.display = 'block';
+    function showElement(element) {
+        return function(event) {
+            event.stopPropagation();
+            hideAll();
+            element.style.display = 'block';
+        }
     }
 
-    function showTimeOptions(event) {
-        event.stopPropagation();
-        timeOptionsElement.style.display = 'block';
-        let left = event.clientX;
-        let top = event.clientY;
-        if (document.body.offsetWidth < (left + timeOptionsElement.offsetWidth)) {
-            left = document.body.offsetWidth - timeOptionsElement.offsetWidth - 20;
-            if (left < 0) {
-                left = 0;
+    function showOptions(element) {
+        return function(event) {
+            event.stopPropagation();
+            hideAll();
+            element.appendChild(aboutOptionElement);
+            element.style.display = 'block';
+            let left = event.clientX;
+            let top = event.clientY;
+            if (document.body.offsetWidth < (left + element.offsetWidth)) {
+                left = document.body.offsetWidth - element.offsetWidth - 20;
+                if (left < 0) {
+                    left = 0;
+                }
             }
-        }
-        if (document.body.offsetHeight < (top + timeOptionsElement.offsetHeight)) {
-            top = document.body.offsetHeight - timeOptionsElement.offsetHeight - 90;
-            if (top < 0) {
-                top = 0;
+            if (document.body.offsetHeight < (top + element.offsetHeight)) {
+                top = document.body.offsetHeight - element.offsetHeight - 90;
+                if (top < 0) {
+                    top = 0;
+                }
             }
+            setStyles([element], {
+                position: 'absolute',
+                left: left + 'px',
+                top: top + 'px'
+            });
         }
-        setStyles([timeOptionsElement], {
-            position: 'absolute',
-            left: left + 'px',
-            top: top + 'px'
-        });
     }
 
     function showTimeAlignOptions() {
@@ -138,11 +146,6 @@ document.addEventListener('DOMContentLoaded', function() {
         timeAlignTableElement.style.display = 'block';
     }
 
-    function showTimeColorOptions() {
-        event.stopPropagation();
-        timeColorInputElement.style.display = 'block';
-    }
-
     function updateAlignment(horizontal, vertical) {
         return function(event) {
             event.stopPropagation();
@@ -154,11 +157,13 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     }
 
-    function updateColor(event) {
-        hideAll();
-        setPersistentStyles(timeElement, {
-            color: timeColorInputElement.value
-        });
+    function updateColor(targetElement, colorPickerElement, itemKey) {
+        return function(event) {
+            hideAll();
+            const styles = {};
+            styles[itemKey] = colorPickerElement.value;
+            setPersistentStyles(targetElement, styles);
+        }
     }
 
     function updateTime() {
@@ -169,13 +174,14 @@ document.addEventListener('DOMContentLoaded', function() {
         // styles
         setStyles([document.documentElement, document.body], styles.root);
         setStyles([document.body], styles.body);
-        setStyles([aboutElement, timeOptionsElement], styles.options);
+        setStyles([aboutElement, backgroundOptionsElement, timeOptionsElement], styles.options);
 
-        // restore persisted styles
+        // restore or initialize persisted styles
         for (const [key, defaultValue, element] of [
             ['align-items', 'center', document.body],
             ['justify-content', 'center', document.body],
-            ['color', '#000000', timeElement]
+            ['color', '#000000', timeElement],
+            ['background-color', '#ffffff', document.body]
         ]) {
             let value = localStorage.getItem(key);
             if (!value) {
@@ -187,28 +193,42 @@ document.addEventListener('DOMContentLoaded', function() {
 
         // text
         timeAlignElement.textContent = 'Alignment…';
-        timeColorLabelElement.textContent = 'Color…';
+        backgroundColorLabelElement.textContent = timeColorLabelElement.textContent = 'Color…';
         aboutOptionElement.textContent = 'About…';
 
         // color picker
-        timeColorLabelElement.setAttribute('for', 'timeColor');
-        timeColorInputElement.setAttribute('id', 'timeColor');
-        timeColorInputElement.setAttribute('type', 'color');
-        timeColorInputElement.value = localStorage.getItem('color');
-        timeColorElement.appendChild(timeColorLabelElement);
-        timeColorElement.appendChild(document.createElement('br'));
-        timeColorElement.appendChild(timeColorInputElement);
+        for (const [pickerId, itemKey, labelElement, inputElement, colorElement] of [
+            ['backgroundColor', 'background-color', backgroundColorLabelElement, backgroundColorInputElement, backgroundColorElement],
+            ['timeColor', 'color', timeColorLabelElement, timeColorInputElement, timeColorElement]
+        ]) {
+            labelElement.setAttribute('for', pickerId);
+            inputElement.setAttribute('id', pickerId);
+            inputElement.setAttribute('type', 'color');
+            inputElement.value = localStorage.getItem(itemKey);
+            colorElement.appendChild(labelElement);
+            colorElement.appendChild(document.createElement('br'));
+            colorElement.appendChild(inputElement);
+        }
 
         // menus
         timeAlignElement.appendChild(timeAlignTableElement);
-        for (const element of [
-            timeAlignElement,
-            timeColorElement,
-            aboutOptionElement
+        for (const [optionsElement, options] of [
+            [
+                backgroundOptionsElement, [
+                    backgroundColorElement
+                ]
+            ], [
+                timeOptionsElement, [
+                    timeAlignElement,
+                    timeColorElement
+                ]
+            ]
         ]) {
-            timeOptionsElement.appendChild(element);
+            for (const element of options) {
+                optionsElement.appendChild(element);
+            }
+            document.body.appendChild(optionsElement);
         }
-        document.body.appendChild(timeOptionsElement);
     }
 
     const styles = {
@@ -237,6 +257,10 @@ document.addEventListener('DOMContentLoaded', function() {
     };
 
     const aboutElement = document.body.childNodes[1];
+    const backgroundOptionsElement = document.createElement('ul');
+    const backgroundColorElement = document.createElement('li');
+    const backgroundColorLabelElement = document.createElement('label');
+    const backgroundColorInputElement = document.createElement('input');
     const timeElement = document.createElement('span');
     const timeOptionsElement = document.createElement('ul');
     const timeAlignElement = document.createElement('li');
@@ -249,15 +273,22 @@ document.addEventListener('DOMContentLoaded', function() {
     // prepare events
     setInterval(updateTime, 1000);
     for (const [element, callback] of [
-        [timeElement, showTimeOptions],
+        [aboutElement, showElement(document.documentElement)],
+        [aboutOptionElement, showElement(aboutElement)],
+        [backgroundColorElement, showElement(backgroundColorInputElement)],
+        [document.body, showOptions(backgroundOptionsElement)],
+        [timeElement, showOptions(timeOptionsElement)],
         [timeAlignElement, showTimeAlignOptions],
-        [timeColorElement, showTimeColorOptions],
-        [aboutOptionElement, showAbout],
-        [document.body, hideAll]
+        [timeColorElement, showElement(timeColorInputElement)]
     ]) {
         element.onclick = callback;
     }
-    timeColorInputElement.onchange = updateColor;
+    for (const [element, target, source, itemKey] of [
+        [backgroundColorInputElement, document.body, backgroundColorInputElement, 'background-color'],
+        [timeColorInputElement, timeElement, timeColorInputElement, 'color']
+    ]) {
+        element.onchange = updateColor(target, source, itemKey);
+    }
 
     // load DOM
     updateTime();
