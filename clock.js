@@ -69,24 +69,103 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 
     function updateLayout() {
+        const styles = {
+            root: {
+                height: '100%',
+                margin: '0'
+            },
+            body: {
+                cursor: 'pointer',
+                display: 'flex'
+            },
+            options: {
+                margin: '0',
+                'background-color': 'rgba(255, 255, 255, 0.7)',
+                'border-radius': '1em'
+            }
+        };
+        const alignmentTable = [
+            [
+                {
+                    symbol: '⭶',
+                    hAlign: 'left',
+                    vAlign: 'top',
+                    onclick: function(event) {
+                        updateAlignmentEvent(event, 'start', 'start');
+                    }
+                },{
+                    symbol: '⭱',
+                    hAlign: 'center',
+                    vAlign: 'top',
+                    onclick: function(event) {
+                        updateAlignmentEvent(event, 'center', 'start');
+                    }
+                },{
+                    symbol: '⭷',
+                    hAlign: 'left',
+                    vAlign: 'top',
+                    onclick: function(event) {
+                        updateAlignmentEvent(event, 'end', 'start');
+                    }
+                }
+            ],[
+                {
+                    symbol: '⭰',
+                    hAlign: 'left',
+                    vAlign: 'middle',
+                    onclick: function(event) {
+                        updateAlignmentEvent(event, 'start', 'center');
+                    }
+                },{
+                    symbol: '✛',
+                    hAlign: 'center',
+                    vAlign: 'middle',
+                    onclick: function(event) {
+                        updateAlignmentEvent(event, 'center', 'center');
+                    }
+                },{
+                    symbol: '⭲',
+                    hAlign: 'left',
+                    vAlign: 'middle',
+                    onclick: function(event) {
+                        updateAlignmentEvent(event, 'end', 'center');
+                    }
+                }
+            ],[
+                {
+                    symbol: '⭹',
+                    hAlign: 'left',
+                    vAlign: 'bottom',
+                    onclick: function(event) {
+                        updateAlignmentEvent(event, 'start', 'end');
+                    }
+                },{
+                    symbol: '⭳',
+                    hAlign: 'center',
+                    vAlign: 'bottom',
+                    onclick: function(event) {
+                        updateAlignmentEvent(event, 'center', 'end');
+                    }
+                },{
+                    symbol: '⭸',
+                    hAlign: 'left',
+                    vAlign: 'bottom',
+                    onclick: function(event) {
+                        updateAlignmentEvent(event, 'end', 'end');
+                    }
+                }
+            ]
+        ];
+
+        // styles
         for (const element of [
             document.documentElement,
             document.body
         ]) {
-            setStyles(element, {
-                height: '100%',
-                margin: '0'
-            });
+            setStyles(element, styles.root);
         }
-        setStyles(document.body, {
-            cursor: 'pointer',
-            display: 'flex'
-        });
-        setStyles(timeOptionsElement, {
-            margin: '0',
-            'background-color': 'rgba(255, 255, 255, 0.7)',
-            'border-radius': '1em'
-        });
+        setStyles(document.body, styles.body);
+        setStyles(timeOptionsElement, styles.options);
 
         for (const key of [
             'justify-content',
@@ -99,6 +178,36 @@ document.addEventListener('DOMContentLoaded', function() {
             }
             document.body.style[key] = value;
         }
+
+        // text
+        timeAlignElement.textContent = 'Alignment…';
+        aboutOptionElement.textContent = 'About…';
+
+        // alignment table
+        for (const row of alignmentTable) {
+            const alignTableRow = nodePalette.tr.cloneNode();
+            for (const cell of row) {
+                const alignTableDash = nodePalette.td.cloneNode();
+                alignTableDash.textContent = cell.symbol;
+                setStyles(alignTableDash, {
+                    'text-align': cell.hAlign,
+                    'vertical-align': cell.vAlign
+                });
+                alignTableDash.onclick = cell.onclick;
+                alignTableRow.appendChild(alignTableDash);
+            }
+            timeAlignTableElement.appendChild(alignTableRow);
+        }
+        timeAlignElement.appendChild(timeAlignTableElement);
+
+        // menus
+        for (const element of [
+            timeAlignElement,
+            aboutOptionElement
+        ]) {
+            timeOptionsElement.appendChild(element);
+        }
+        document.body.appendChild(timeOptionsElement);
     }
 
     const nodePalette = {
@@ -112,116 +221,25 @@ document.addEventListener('DOMContentLoaded', function() {
     const timeOptionsElement = document.createElement('ul');
     const timeAlignElement = nodePalette.li.cloneNode();
     const timeAlignTableElement = document.createElement('table');
+    const timeColorElement = nodePalette.li.cloneNode();
+    const timeColorInputElement = document.createElement('input');
     const aboutOptionElement = nodePalette.li.cloneNode();
 
     // prepare events
     setInterval(updateTime, 1000);
-    timeElement.onclick = showTimeOptions;
-    timeAlignElement.onclick = showTimeAlignOptions;
-    aboutOptionElement.onclick = showAbout;
-    document.body.onclick = hideAll;
+    for (const [element, callback] of [
+        [timeElement, showTimeOptions],
+        [timeAlignElement, showTimeAlignOptions],
+//        [timeColorElement, showTimeColorOptions],
+        [aboutOptionElement, showAbout],
+        [document.body, hideAll]
+    ]) {
+        element.onclick = callback;
+    }
 
     // load DOM
     updateTime();
+    document.body.appendChild(timeElement);
     hideAll();
     updateLayout();
-    document.body.appendChild(timeElement);
-
-    timeAlignElement.textContent = 'Alignment…';
-    aboutOptionElement.textContent = 'About…';
-
-    for (const row of [
-        [
-            {
-                symbol: '⭶',
-                hAlign: 'left',
-                vAlign: 'top',
-                onclick: function(event) {
-                    updateAlignmentEvent(event, 'start', 'start');
-                }
-            },{
-                symbol: '⭱',
-                hAlign: 'center',
-                vAlign: 'top',
-                onclick: function(event) {
-                    updateAlignmentEvent(event, 'center', 'start');
-                }
-            },{
-                symbol: '⭷',
-                hAlign: 'left',
-                vAlign: 'top',
-                onclick: function(event) {
-                    updateAlignmentEvent(event, 'end', 'start');
-                }
-            }
-        ],[
-            {
-                symbol: '⭰',
-                hAlign: 'left',
-                vAlign: 'middle',
-                onclick: function(event) {
-                    updateAlignmentEvent(event, 'start', 'center');
-                }
-            },{
-                symbol: '✛',
-                hAlign: 'center',
-                vAlign: 'middle',
-                onclick: function(event) {
-                    updateAlignmentEvent(event, 'center', 'center');
-                }
-            },{
-                symbol: '⭲',
-                hAlign: 'left',
-                vAlign: 'middle',
-                onclick: function(event) {
-                    updateAlignmentEvent(event, 'end', 'center');
-                }
-            }
-        ],[
-            {
-                symbol: '⭹',
-                hAlign: 'left',
-                vAlign: 'bottom',
-                onclick: function(event) {
-                    updateAlignmentEvent(event, 'start', 'end');
-                }
-            },{
-                symbol: '⭳',
-                hAlign: 'center',
-                vAlign: 'bottom',
-                onclick: function(event) {
-                    updateAlignmentEvent(event, 'center', 'end');
-                }
-            },{
-                symbol: '⭸',
-                hAlign: 'left',
-                vAlign: 'bottom',
-                onclick: function(event) {
-                    updateAlignmentEvent(event, 'end', 'end');
-                }
-            }
-        ]
-    ]) {
-        const alignTableRow = nodePalette.tr.cloneNode();
-        for (const cell of row) {
-            const alignTableDash = nodePalette.td.cloneNode();
-            alignTableDash.textContent = cell.symbol;
-            setStyles(alignTableDash, {
-                'text-align': cell.hAlign,
-                'vertical-align': cell.vAlign
-            });
-            alignTableDash.onclick = cell.onclick;
-            alignTableRow.appendChild(alignTableDash);
-        }
-        timeAlignTableElement.appendChild(alignTableRow);
-    }
-    timeAlignElement.appendChild(timeAlignTableElement);
-
-    for (const element of [
-        timeAlignElement,
-        aboutOptionElement
-    ]) {
-        timeOptionsElement.appendChild(element);
-    }
-    document.body.appendChild(timeOptionsElement);
 });
