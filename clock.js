@@ -175,6 +175,7 @@ document.addEventListener('DOMContentLoaded', function() {
         setStyles([document.documentElement, document.body], styles.root);
         setStyles([document.body], styles.body);
         setStyles([aboutElement, backgroundOptionsElement, timeOptionsElement], styles.options);
+        timeElement.style.margin = '1em';
 
         // restore or initialize persisted styles
         for (const [key, defaultValue, element] of [
