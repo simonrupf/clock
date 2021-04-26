@@ -57,6 +57,87 @@ document.addEventListener('DOMContentLoaded', function() {
 
     function showTimeAlignOptions() {
         event.stopPropagation();
+
+        const alignmentTable = [
+            [
+                {
+                    symbol: '⭶',
+                    hAlign: 'start',
+                    vAlign: 'start'
+                },{
+                    symbol: '⭱',
+                    hAlign: 'center',
+                    vAlign: 'start'
+                },{
+                    symbol: '⭷',
+                    hAlign: 'end',
+                    vAlign: 'start'
+                }
+            ],[
+                {
+                    symbol: '⭰',
+                    hAlign: 'start',
+                    vAlign: 'center'
+                },{
+                    symbol: '✛',
+                    hAlign: 'center',
+                    vAlign: 'center'
+                },{
+                    symbol: '⭲',
+                    hAlign: 'end',
+                    vAlign: 'center'
+                }
+            ],[
+                {
+                    symbol: '⭹',
+                    hAlign: 'start',
+                    vAlign: 'end'
+                },{
+                    symbol: '⭳',
+                    hAlign: 'center',
+                    vAlign: 'end'
+                },{
+                    symbol: '⭸',
+                    hAlign: 'end',
+                    vAlign: 'end'
+                }
+            ]
+        ];
+        const alignmentMap = {
+            start: ['left', 'top'],
+            center: ['center', 'middle'],
+            end: ['right', 'bottom']
+        }
+        const horizontal = localStorage.getItem('justify-content');
+        const vertical = localStorage.getItem('align-items');
+
+        // clear table and re-draw it
+        timeAlignTableElement.textContent = '';
+        for (const row of alignmentTable) {
+            const alignTableRow = nodePalette.tr.cloneNode();
+            for (const cell of row) {
+                const alignTableDash = nodePalette.td.cloneNode();
+                alignTableDash.textContent = cell.symbol;
+                setStyles(alignTableDash, {
+                    padding: '0 0.2em',
+                    'text-align': alignmentMap[cell.hAlign][0],
+                    'vertical-align': alignmentMap[cell.vAlign][1]
+                });
+                if (
+                    horizontal == cell.hAlign &&
+                    vertical == cell.vAlign
+                ) {
+                    setStyles(alignTableDash, {
+                        color: 'white',
+                        'background-color': 'black',
+                        'border-radius': '0.2em'
+                    });
+                }
+                alignTableDash.onclick = updateAlignment(cell.hAlign, cell.vAlign);
+                alignTableRow.appendChild(alignTableDash);
+            }
+            timeAlignTableElement.appendChild(alignTableRow);
+        }
         timeAlignTableElement.style.display = 'block';
     }
 
@@ -65,13 +146,15 @@ document.addEventListener('DOMContentLoaded', function() {
         timeColorInputElement.style.display = 'block';
     }
 
-    function updateAlignment(event, horizontal, vertical) {
-        event.stopPropagation();
-        hideAll();
-        setPersistentStyles(document.body, {
-            'justify-content': horizontal,
-            'align-items': vertical
-        });
+    function updateAlignment(horizontal, vertical) {
+        return function(event) {
+            event.stopPropagation();
+            hideAll();
+            setPersistentStyles(document.body, {
+                'justify-content': horizontal,
+                'align-items': vertical
+            });
+        }
     }
 
     function updateColor(event) {
@@ -97,83 +180,11 @@ document.addEventListener('DOMContentLoaded', function() {
             },
             options: {
                 margin: '0',
+                padding: '0.5em 2em',
                 'background-color': 'rgba(255, 255, 255, 0.7)',
-                'border-radius': '1em'
+                'border-radius': '0.2em'
             }
         };
-        const alignmentTable = [
-            [
-                {
-                    symbol: '⭶',
-                    hAlign: 'left',
-                    vAlign: 'top',
-                    onclick: function(event) {
-                        updateAlignment(event, 'start', 'start');
-                    }
-                },{
-                    symbol: '⭱',
-                    hAlign: 'center',
-                    vAlign: 'top',
-                    onclick: function(event) {
-                        updateAlignment(event, 'center', 'start');
-                    }
-                },{
-                    symbol: '⭷',
-                    hAlign: 'left',
-                    vAlign: 'top',
-                    onclick: function(event) {
-                        updateAlignment(event, 'end', 'start');
-                    }
-                }
-            ],[
-                {
-                    symbol: '⭰',
-                    hAlign: 'left',
-                    vAlign: 'middle',
-                    onclick: function(event) {
-                        updateAlignment(event, 'start', 'center');
-                    }
-                },{
-                    symbol: '✛',
-                    hAlign: 'center',
-                    vAlign: 'middle',
-                    onclick: function(event) {
-                        updateAlignment(event, 'center', 'center');
-                    }
-                },{
-                    symbol: '⭲',
-                    hAlign: 'left',
-                    vAlign: 'middle',
-                    onclick: function(event) {
-                        updateAlignment(event, 'end', 'center');
-                    }
-                }
-            ],[
-                {
-                    symbol: '⭹',
-                    hAlign: 'left',
-                    vAlign: 'bottom',
-                    onclick: function(event) {
-                        updateAlignment(event, 'start', 'end');
-                    }
-                },{
-                    symbol: '⭳',
-                    hAlign: 'center',
-                    vAlign: 'bottom',
-                    onclick: function(event) {
-                        updateAlignment(event, 'center', 'end');
-                    }
-                },{
-                    symbol: '⭸',
-                    hAlign: 'left',
-                    vAlign: 'bottom',
-                    onclick: function(event) {
-                        updateAlignment(event, 'end', 'end');
-                    }
-                }
-            ]
-        ];
-
         // styles
         for (const element of [
             document.documentElement,
@@ -182,7 +193,12 @@ document.addEventListener('DOMContentLoaded', function() {
             setStyles(element, styles.root);
         }
         setStyles(document.body, styles.body);
-        setStyles(timeOptionsElement, styles.options);
+        for (const element of [
+            aboutElement,
+            timeOptionsElement
+        ]) {
+            setStyles(element, styles.options);
+        }
 
         for (const [key, defaultValue, element] of [
             ['align-items', 'center', document.body],
@@ -202,23 +218,6 @@ document.addEventListener('DOMContentLoaded', function() {
         timeColorLabelElement.textContent = 'Color…';
         aboutOptionElement.textContent = 'About…';
 
-        // alignment table
-        for (const row of alignmentTable) {
-            const alignTableRow = nodePalette.tr.cloneNode();
-            for (const cell of row) {
-                const alignTableDash = nodePalette.td.cloneNode();
-                alignTableDash.textContent = cell.symbol;
-                setStyles(alignTableDash, {
-                    'text-align': cell.hAlign,
-                    'vertical-align': cell.vAlign
-                });
-                alignTableDash.onclick = cell.onclick;
-                alignTableRow.appendChild(alignTableDash);
-            }
-            timeAlignTableElement.appendChild(alignTableRow);
-        }
-        timeAlignElement.appendChild(timeAlignTableElement);
-
         // color picker
         timeColorLabelElement.setAttribute('for', 'timeColor');
         timeColorInputElement.setAttribute('id', 'timeColor');
@@ -229,6 +228,7 @@ document.addEventListener('DOMContentLoaded', function() {
         timeColorElement.appendChild(timeColorInputElement);
 
         // menus
+        timeAlignElement.appendChild(timeAlignTableElement);
         for (const element of [
             timeAlignElement,
             timeColorElement,
