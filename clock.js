@@ -9,6 +9,7 @@ document.addEventListener('DOMContentLoaded', function() {
             backgroundOptionsElement,
             timeAlignTableElement,
             timeColorInputElement,
+            timeSizeSetElement,
             timeOptionsElement
         ]) {
             element.style.display = 'none'
@@ -197,6 +198,7 @@ document.addEventListener('DOMContentLoaded', function() {
         setStyles([document.documentElement, document.body], styles.root);
         setStyles([document.body], styles.body);
         setStyles([aboutElement, backgroundOptionsElement, timeOptionsElement], styles.options);
+        setStyles([timeSizeSetElement], styles.fieldgroup);
         timeElement.style.margin = '1em';
 
         // restore or initialize persisted styles
@@ -220,7 +222,7 @@ document.addEventListener('DOMContentLoaded', function() {
         timeAlignElement.textContent = 'Alignment…';
         backgroundColorLabelElement.textContent = timeColorLabelElement.textContent = 'Color…';
         backgroundImageLabelElement.textContent = 'Image URL…';
-        timeSizeLabelElement.textContent = 'Size:';
+        timeSizeLabelElement.textContent = 'Size…';
         aboutOptionElement.textContent = 'About…';
 
         // color picker
@@ -264,10 +266,11 @@ document.addEventListener('DOMContentLoaded', function() {
         const fontSize = localStorage.getItem('font-size').match(/[a-z%]+|[0-9]+/g);
         timeSizeInputElement.value = fontSize[0];
         timeSizeSelectElement.value = fontSize[1];
+        timeSizeSetElement.appendChild(timeSizeInputElement);
+        timeSizeSetElement.appendChild(timeSizeSelectElement);
         timeSizeElement.appendChild(timeSizeLabelElement);
         timeSizeElement.appendChild(document.createElement('br'));
-        timeSizeElement.appendChild(timeSizeInputElement);
-        timeSizeElement.appendChild(timeSizeSelectElement);
+        timeSizeElement.appendChild(timeSizeSetElement);
 
         // menus
         timeAlignElement.appendChild(timeAlignTableElement);
@@ -293,19 +296,9 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 
     const styles = {
-        root: {
-            height: '100%',
-            margin: '0'
-        },
         body: {
             cursor: 'pointer',
             display: 'flex'
-        },
-        options: {
-            margin: '1em',
-            padding: '0.5em 2em',
-            'background-color': 'rgba(255, 255, 255, 0.7)',
-            'border-radius': '0.2em'
         },
         dash: {
             padding: '0 0.2em'
@@ -314,6 +307,21 @@ document.addEventListener('DOMContentLoaded', function() {
             color: 'white',
             'background-color': 'black',
             'border-radius': '0.2em'
+        },
+        fieldgroup: {
+            border: '0',
+            margin: '0',
+            padding: '0'
+        },
+        options: {
+            margin: '1em',
+            padding: '0.5em 2em',
+            'background-color': 'rgba(255, 255, 255, 0.7)',
+            'border-radius': '0.2em'
+        },
+        root: {
+            height: '100%',
+            margin: '0'
         }
     };
 
@@ -334,6 +342,7 @@ document.addEventListener('DOMContentLoaded', function() {
     const timeColorInputElement = document.createElement('input');
     const timeSizeElement = document.createElement('li');
     const timeSizeLabelElement = document.createElement('label');
+    const timeSizeSetElement = document.createElement('fieldset');
     const timeSizeInputElement = document.createElement('input');
     const timeSizeSelectElement = document.createElement('select');
     const aboutOptionElement = document.createElement('li');
@@ -350,6 +359,7 @@ document.addEventListener('DOMContentLoaded', function() {
         [timeElement, showOptions(timeOptionsElement)],
         [timeAlignElement, showTimeAlignOptions],
         [timeColorElement, showElement(timeColorInputElement)],
+        [timeSizeElement, showElement(timeSizeSetElement)],
         [timeOptionsElement, event => event.stopPropagation()]
     ]) {
         element.onclick = callback;
