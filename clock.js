@@ -9,6 +9,7 @@ document.addEventListener('DOMContentLoaded', function() {
             backgroundOptionsElement,
             timeAlignTableElement,
             timeColorInputElement,
+            timeFontSelectElement,
             timeSizeSetElement,
             timeOptionsElement
         ]) {
@@ -169,6 +170,7 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 
     function updateBackgroundImage() {
+        hideAll();
         setPersistentStyles(document.body, {
             'background-image': 'url("' + backgroundImageInputElement.value + '")'
         });
@@ -181,6 +183,13 @@ document.addEventListener('DOMContentLoaded', function() {
             styles[itemKey] = colorPickerElement.value;
             setPersistentStyles(targetElement, styles);
         }
+    }
+
+    function updateFont() {
+        hideAll();
+        setPersistentStyles(timeElement, {
+            'font-family': timeFontSelectElement.value
+        });
     }
 
     function updateSize() {
@@ -208,6 +217,7 @@ document.addEventListener('DOMContentLoaded', function() {
             ['color', '#000000', timeElement],
             ['background-color', '#ffffff', document.body],
             ['background-image', '', document.body],
+            ['font-family', '', timeElement],
             ['font-size', '1em', timeElement]
         ]) {
             let value = localStorage.getItem(key);
@@ -215,13 +225,16 @@ document.addEventListener('DOMContentLoaded', function() {
                 localStorage.setItem(key, defaultValue);
                 value = defaultValue;
             }
-            element.style[key] = value;
+            if (value) {
+                element.style[key] = value;
+            }
         }
 
         // text
         timeAlignElement.textContent = 'Alignment…';
         backgroundColorLabelElement.textContent = timeColorLabelElement.textContent = 'Color…';
         backgroundImageLabelElement.textContent = 'Image URL…';
+        timeFontLabelElement.textContent = 'Font…';
         timeSizeLabelElement.textContent = 'Size…';
         aboutOptionElement.textContent = 'About…';
 
@@ -245,9 +258,25 @@ document.addEventListener('DOMContentLoaded', function() {
         backgroundImageInputElement.setAttribute('type', 'url');
         backgroundImageInputElement.setAttribute('pattern', 'https://.*');
         backgroundImageInputElement.setAttribute('placeholder', 'https://example.com');
+        const backgroundImage = localStorage.getItem('background-image');
+        backgroundImageInputElement.value = backgroundImage ? backgroundImage.substring(5, backgroundImage.length - 2) : '';
         backgroundImageElement.appendChild(backgroundImageLabelElement);
         backgroundImageElement.appendChild(document.createElement('br'));
         backgroundImageElement.appendChild(backgroundImageInputElement);
+
+        // font
+        timeFontLabelElement.setAttribute('for', 'timeFont');
+        timeFontSelectElement.setAttribute('id', 'timeFont');
+        for (const fontFamily of ['Browser Default', 'Serif', 'Sans-Serif', 'Cursive', 'Fantasy', 'Monospace']) {
+            const timeFontOptionElement = document.createElement('option');
+            timeFontOptionElement.textContent = fontFamily;
+            timeFontOptionElement.value = fontFamily == 'Browser Default' ? '' : fontFamily;
+            timeFontSelectElement.appendChild(timeFontOptionElement);
+        }
+        timeFontSelectElement.value = localStorage.getItem('font-family');
+        timeFontElement.appendChild(timeFontLabelElement);
+        timeFontElement.appendChild(document.createElement('br'));
+        timeFontElement.appendChild(timeFontSelectElement);
 
         // size
         timeSizeLabelElement.setAttribute('for', 'timeSizeAmount');
@@ -284,6 +313,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 timeOptionsElement, [
                     timeAlignElement,
                     timeColorElement,
+                    timeFontElement,
                     timeSizeElement
                 ]
             ]
@@ -340,6 +370,9 @@ document.addEventListener('DOMContentLoaded', function() {
     const timeColorElement = document.createElement('li');
     const timeColorLabelElement = document.createElement('label');
     const timeColorInputElement = document.createElement('input');
+    const timeFontElement = document.createElement('li');
+    const timeFontLabelElement = document.createElement('label');
+    const timeFontSelectElement = document.createElement('select');
     const timeSizeElement = document.createElement('li');
     const timeSizeLabelElement = document.createElement('label');
     const timeSizeSetElement = document.createElement('fieldset');
@@ -359,6 +392,7 @@ document.addEventListener('DOMContentLoaded', function() {
         [timeElement, showOptions(timeOptionsElement)],
         [timeAlignElement, showTimeAlignOptions],
         [timeColorElement, showElement(timeColorInputElement)],
+        [timeFontLabelElement, showElement(timeFontSelectElement)],
         [timeSizeElement, showElement(timeSizeSetElement)],
         [timeOptionsElement, event => event.stopPropagation()]
     ]) {
@@ -374,6 +408,7 @@ document.addEventListener('DOMContentLoaded', function() {
         element.onchange = updateSize;
     }
     backgroundImageInputElement.onchange = updateBackgroundImage;
+    timeFontSelectElement.onchange = updateFont;
 
     // load DOM
     updateTime();
