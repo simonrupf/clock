@@ -1,43 +1,6 @@
 'use strict';
 
 document.addEventListener('DOMContentLoaded', function() {
-    // CSS element styles
-    const styles = {
-        body: {
-            cursor: 'pointer',
-            display: 'flex'
-        },
-        dash: {
-            padding: '0 0.2em'
-        },
-        dashSelected: {
-            'background-color': 'black',
-            'border-radius': '0.2em',
-            color: 'white'
-        },
-        fieldgroup: {
-            border: '0',
-            margin: '0',
-            padding: '0'
-        },
-        input: {
-            'text-align': 'right',
-            width: '3em'
-        },
-        options: {
-            'background-color': 'rgba(255, 255, 255, 0.7)',
-            'border-radius': '0.2em',
-            color: 'black',
-            'font-family': 'sans-serif',
-            margin: '1em',
-            padding: '0.5em 2em'
-        },
-        root: {
-            height: '100%',
-            margin: '0'
-        }
-    };
-
     // functions
     function appendFormElements(elements, formElement) {
         elements.self.appendChild(elements.label);
@@ -148,7 +111,6 @@ document.addEventListener('DOMContentLoaded', function() {
         this.events.onHide.push(self);
 
         this.setup = function() {
-            setStyles([self], styles.options);
             this.elements.option.textContent = 'About…';
         };
     }
@@ -229,17 +191,16 @@ document.addEventListener('DOMContentLoaded', function() {
                 for (const cell of row) {
                     const alignTableDash = document.createElement('td');
                     alignTableDash.textContent = cell.symbol;
-                    const dashStyles = Object.assign({
+                    setStyles([alignTableDash], {
                         'text-align': alignmentMap[cell.hAlign][0],
                         'vertical-align': alignmentMap[cell.vAlign][1]
-                    }, styles.dash);
+                    });
                     if (
                         horizontal == cell.hAlign &&
                         vertical == cell.vAlign
                     ) {
-                        Object.assign(dashStyles, styles.dashSelected);
+                        alignTableDash.setAttribute('class', 'selected');
                     }
-                    setStyles([alignTableDash], dashStyles);
                     const globalStyles = {};
                     globalStyles[horizontalKey] = cell.hAlign;
                     globalStyles[verticalKey] = cell.vAlign;
@@ -334,7 +295,7 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     }
 
-    function OptionComponent(styles, target, aboutComponent, components = []) {
+    function OptionComponent(target, aboutComponent, components = []) {
         Component.call(this, {
             self: document.createElement('ul')
         });
@@ -371,7 +332,6 @@ document.addEventListener('DOMContentLoaded', function() {
         this.events.onHide.push(self);
 
         this.setup = function() {
-            setStyles([self], styles);
             for (const component of components) {
                 self.appendChild(component.elements.self);
             }
@@ -407,8 +367,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
         this.setup = function() {
             updateProperties(this.elements.label, input, key, 'Size…');
-            setStyles([this.elements.setting], styles.fieldgroup);
-            setStyles([input], styles.input);
+            input.setAttribute('class', 'small');
             input.setAttribute('type', 'number');
             input.setAttribute('min', '1');
             select.setAttribute('id', key + '-unit');
@@ -434,11 +393,11 @@ document.addEventListener('DOMContentLoaded', function() {
         aboutComponent,
         backgroundColorComponent,
         backgroundImageComponent,
-        new OptionComponent(styles.options, document.body, aboutComponent, [
+        new OptionComponent(document.body, aboutComponent, [
             backgroundColorComponent,
             backgroundImageComponent
         ]),
-        new OptionComponent(styles.options, timeElement, aboutComponent, [
+        new OptionComponent(timeElement, aboutComponent, [
             timeAlignComponent,
             timeColorComponent,
             timeFontComponent,
@@ -454,11 +413,6 @@ document.addEventListener('DOMContentLoaded', function() {
     updateTime();
     document.body.appendChild(timeElement);
     hideAll();
-
-    // set styles
-    setStyles([document.documentElement, document.body], styles.root);
-    setStyles([document.body], styles.body);
-    timeElement.style.margin = '1em';
 
     // prepare events, restore or initialize persisted styles
     setInterval(updateTime, 1000);

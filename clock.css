@@ -1,0 +1,44 @@
+html, body {
+    height: 100%;
+    margin: 0;
+}
+
+body {
+    cursor: pointer;
+    display: flex;
+}
+
+td {
+    padding: 0 0.2em;
+}
+
+td.selected {
+    background-color: black;
+    border-radius: 0.2em;
+    color: white;
+}
+
+fieldset {
+    border: 0;
+    margin: 0;
+    padding: 0;
+}
+
+input.small {
+    text-align: right;
+    width: 3em;
+}
+
+span {
+    margin: 1em;
+}
+
+ul, div {
+    background-color: rgba(255, 255, 255, 0.7);
+    border-radius: 0.2em;
+    color: black;
+    font-family: sans-serif;
+    margin: 1em;
+    padding: 0.5em 2em;
+}
+
