@@ -270,10 +270,10 @@ document.addEventListener('DOMContentLoaded', function() {
         this.target = document.body;
     }
 
-    function AboutComponent(styles, optionElement) {
+    function AboutComponent(styles) {
         Component.call(this, {
             self: document.body.childNodes[1],
-            option: optionElement
+            option: document.createElement('li')
         });
 
         const self = this.elements.self;
@@ -329,7 +329,7 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     }
 
-    function OptionComponent(styles, targetElement, options = []) {
+    function OptionComponent(styles, targetElement, aboutOptionElement, options = []) {
         Component.call(this, {
             self: document.createElement('ul')
         });
@@ -407,7 +407,7 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     };
 
-    const aboutOptionElement = document.createElement('li');
+    const aboutOptionComponent = new AboutComponent(styles.options);
     const backgroundColorElement = document.createElement('li');
     const backgroundColorLabelElement = document.createElement('label');
     const backgroundColorInputElement = document.createElement('input');
@@ -427,13 +427,13 @@ document.addEventListener('DOMContentLoaded', function() {
     const timeSizeInputElement = document.createElement('input');
     const timeSizeSelectElement = document.createElement('select');
     const components = [
-        new AboutComponent(styles.options, aboutOptionElement),
+        aboutOptionComponent,
         backgroundImageComponent,
-        new OptionComponent(styles.options, document.body, [
+        new OptionComponent(styles.options, document.body, aboutOptionComponent.elements.option, [
             backgroundColorElement,
             backgroundImageComponent.elements.self
         ]),
-        new OptionComponent(styles.options, timeElement, [
+        new OptionComponent(styles.options, timeElement, aboutOptionComponent.elements.option, [
             timeAlignElement,
             timeColorElement,
             timeFontElement,
