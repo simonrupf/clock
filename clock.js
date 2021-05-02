@@ -1,6 +1,43 @@
 'use strict';
 
 document.addEventListener('DOMContentLoaded', function() {
+    // CSS element styles
+    const styles = {
+        body: {
+            cursor: 'pointer',
+            display: 'flex'
+        },
+        dash: {
+            padding: '0 0.2em'
+        },
+        dashSelected: {
+            'background-color': 'black',
+            'border-radius': '0.2em',
+            color: 'white'
+        },
+        fieldgroup: {
+            border: '0',
+            margin: '0',
+            padding: '0'
+        },
+        input: {
+            'text-align': 'right',
+            width: '3em'
+        },
+        options: {
+            'background-color': 'rgba(255, 255, 255, 0.7)',
+            'border-radius': '0.2em',
+            color: 'black',
+            'font-family': 'sans-serif',
+            margin: '1em',
+            padding: '0.5em 2em'
+        },
+        root: {
+            height: '100%',
+            margin: '0'
+        }
+    };
+
     // functions
     function hideAll() {
         for (const component of components) {
@@ -11,8 +48,7 @@ document.addEventListener('DOMContentLoaded', function() {
         for (const element of [
             backgroundColorInputElement,
             timeAlignTableElement,
-            timeColorInputElement,
-            timeSizeSetElement
+            timeColorInputElement
         ]) {
             element.style.display = 'none'
         }
@@ -146,12 +182,6 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     }
 
-    function updateSize() {
-        setPersistentStyles(timeElement, {
-            'font-size': timeSizeInputElement.value + timeSizeSelectElement.value
-        });
-    }
-
     function updateTime() {
         timeElement.textContent = (new Date()).toLocaleTimeString();
     }
@@ -160,7 +190,6 @@ document.addEventListener('DOMContentLoaded', function() {
         // styles
         setStyles([document.documentElement, document.body], styles.root);
         setStyles([document.body], styles.body);
-        setStyles([timeSizeSetElement], styles.fieldgroup);
         timeElement.style.margin = '1em';
 
         // restore or initialize persisted styles
@@ -168,9 +197,7 @@ document.addEventListener('DOMContentLoaded', function() {
             ['align-items', 'center', document.body],
             ['justify-content', 'center', document.body],
             ['color', '#000000', timeElement],
-            ['background-color', '#ffffff', document.body],
-            ['font-family', '', timeElement],
-            ['font-size', '1em', timeElement]
+            ['background-color', '#ffffff', document.body]
         ];
         for (const component of components) {
             if (component.key) {
@@ -191,7 +218,6 @@ document.addEventListener('DOMContentLoaded', function() {
         // text
         timeAlignElement.textContent = 'Alignment…';
         backgroundColorLabelElement.textContent = timeColorLabelElement.textContent = 'Color…';
-        timeSizeLabelElement.textContent = 'Size…';
 
         // color picker
         for (const [pickerId, itemKey, labelElement, inputElement, colorElement] of [
@@ -206,29 +232,6 @@ document.addEventListener('DOMContentLoaded', function() {
             colorElement.appendChild(document.createElement('br'));
             colorElement.appendChild(inputElement);
         }
-
-        // size
-        timeSizeLabelElement.setAttribute('for', 'timeSizeAmount');
-        timeSizeInputElement.setAttribute('id', 'timeSizeAmount');
-        timeSizeInputElement.setAttribute('type', 'number');
-        timeSizeInputElement.setAttribute('min', '1');
-        timeSizeInputElement.style.width = '3em';
-        timeSizeInputElement.style['text-align'] = 'right';
-        timeSizeSelectElement.setAttribute('id', 'timeSizeUnit');
-        for (const unit of ['em', 'px', 'pt', 'cm', 'mm', 'in', 'pc', '%']) {
-            const timeSizeOptionElement = document.createElement('option');
-            timeSizeOptionElement.textContent = unit;
-            timeSizeOptionElement.value = unit;
-            timeSizeSelectElement.appendChild(timeSizeOptionElement);
-        }
-        const fontSize = localStorage.getItem('font-size').match(/[a-z%]+|[0-9]+/g);
-        timeSizeInputElement.value = fontSize[0];
-        timeSizeSelectElement.value = fontSize[1];
-        timeSizeSetElement.appendChild(timeSizeInputElement);
-        timeSizeSetElement.appendChild(timeSizeSelectElement);
-        timeSizeElement.appendChild(timeSizeLabelElement);
-        timeSizeElement.appendChild(document.createElement('br'));
-        timeSizeElement.appendChild(timeSizeSetElement);
 
         // menus
         timeAlignElement.appendChild(timeAlignTableElement);
@@ -247,7 +250,7 @@ document.addEventListener('DOMContentLoaded', function() {
         this.target = document.body;
     }
 
-    function AboutComponent(styles) {
+    function AboutComponent() {
         Component.call(this, {
             self: document.body.childNodes[1],
             option: document.createElement('li')
@@ -265,7 +268,7 @@ document.addEventListener('DOMContentLoaded', function() {
         this.events.onHide.push(self);
 
         this.setup = function() {
-            setStyles([self], styles);
+            setStyles([self], styles.options);
             this.elements.option.textContent = 'About…';
         };
     }
@@ -293,8 +296,8 @@ document.addEventListener('DOMContentLoaded', function() {
 
         this.setup = function() {
             this.elements.label.textContent = 'Image URL…';
-            this.elements.label.setAttribute('for', 'backgroundImage');
-            input.setAttribute('id', 'backgroundImage');
+            this.elements.label.setAttribute('for', key);
+            input.setAttribute('id', key);
             input.setAttribute('type', 'url');
             input.setAttribute('pattern', 'https://.*');
             input.setAttribute('placeholder', 'https://example.com');
@@ -315,6 +318,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
         const select = this.elements.select;
         const key = this.key = 'font-family';
+        this.target = targetElement;
 
         function update() {
             hideAll();
@@ -329,18 +333,18 @@ document.addEventListener('DOMContentLoaded', function() {
 
         this.setup = function() {
             this.elements.label.textContent = 'Font…';
-            this.elements.label.setAttribute('for', 'timeFont');
-            this.elements.select.setAttribute('id', 'timeFont');
+            this.elements.label.setAttribute('for', key);
+            select.setAttribute('id', key);
             for (const fontFamily of ['Browser Default', 'Serif', 'Sans-Serif', 'Cursive', 'Fantasy', 'Monospace']) {
                 const timeFontOptionElement = document.createElement('option');
                 timeFontOptionElement.textContent = fontFamily;
                 timeFontOptionElement.value = fontFamily == 'Browser Default' ? this.default : fontFamily;
-                this.elements.select.appendChild(timeFontOptionElement);
+                select.appendChild(timeFontOptionElement);
             }
-            this.elements.select.value = localStorage.getItem(key);
+            select.value = localStorage.getItem(key);
             this.elements.self.appendChild(this.elements.label);
             this.elements.self.appendChild(document.createElement('br'));
-            this.elements.self.appendChild(this.elements.select);
+            this.elements.self.appendChild(select);
         }
     }
 
@@ -390,39 +394,61 @@ document.addEventListener('DOMContentLoaded', function() {
         };
     }
 
-    const styles = {
-        body: {
-            cursor: 'pointer',
-            display: 'flex'
-        },
-        dash: {
-            padding: '0 0.2em'
-        },
-        dashSelected: {
-            'background-color': 'black',
-            'border-radius': '0.2em',
-            color: 'white'
-        },
-        fieldgroup: {
-            border: '0',
-            margin: '0',
-            padding: '0'
-        },
-        options: {
-            'background-color': 'rgba(255, 255, 255, 0.7)',
-            'border-radius': '0.2em',
-            color: 'black',
-            'font-family': 'sans-serif',
-            margin: '1em',
-            padding: '0.5em 2em'
-        },
-        root: {
-            height: '100%',
-            margin: '0'
-        }
-    };
+    function SizeComponent(targetElement) {
+        Component.call(this, {
+            self: document.createElement('li'),
+            fieldset: document.createElement('fieldset'),
+            input: document.createElement('input'),
+            label: document.createElement('label'),
+            select: document.createElement('select')
+        });
 
-    const aboutOptionComponent = new AboutComponent(styles.options);
+        const input = this.elements.input;
+        const select = this.elements.select;
+        const key = this.key = 'font-size';
+        this.default = '1em';
+        this.target = targetElement;
+
+        function update() {
+            hideAll();
+            const styles = {};
+            styles[key] = input.value + select.value;
+            setPersistentStyles(targetElement, styles);
+        }
+
+        this.events.onClick.push([this.elements.label, showElement(this.elements.fieldset)]);
+        this.events.onChange.push([input, update]);
+        this.events.onChange.push([select, update]);
+        this.events.onHide.push(this.elements.fieldset);
+
+        this.setup = function() {
+            this.elements.label.textContent = 'Size…';
+            this.elements.label.setAttribute('for', key);
+            setStyles([this.elements.fieldset], styles.fieldgroup);
+            setStyles([input], styles.input);
+            input.setAttribute('id', key);
+            input.setAttribute('type', 'number');
+            input.setAttribute('min', '1');
+            select.setAttribute('id', key + '-unit');
+
+            for (const unit of ['em', 'px', 'pt', 'cm', 'mm', 'in', 'pc', '%']) {
+                const timeSizeOptionElement = document.createElement('option');
+                timeSizeOptionElement.textContent = unit;
+                timeSizeOptionElement.value = unit;
+                select.appendChild(timeSizeOptionElement);
+            }
+            const fontSize = localStorage.getItem(key).match(/[a-z%]+|[0-9]+/g);
+            input.value = fontSize[0];
+            select.value = fontSize[1];
+            this.elements.fieldset.appendChild(input);
+            this.elements.fieldset.appendChild(select);
+            this.elements.self.appendChild(this.elements.label);
+            this.elements.self.appendChild(document.createElement('br'));
+            this.elements.self.appendChild(this.elements.fieldset);
+        }
+    }
+
+    const aboutOptionComponent = new AboutComponent();
     const backgroundColorElement = document.createElement('li');
     const backgroundColorLabelElement = document.createElement('label');
     const backgroundColorInputElement = document.createElement('input');
@@ -434,11 +460,7 @@ document.addEventListener('DOMContentLoaded', function() {
     const timeColorInputElement = document.createElement('input');
     const timeElement = document.createElement('span');
     const timeFontComponent = new FontComponent(timeElement);
-    const timeSizeElement = document.createElement('li');
-    const timeSizeLabelElement = document.createElement('label');
-    const timeSizeSetElement = document.createElement('fieldset');
-    const timeSizeInputElement = document.createElement('input');
-    const timeSizeSelectElement = document.createElement('select');
+    const timeSizeComponent = new SizeComponent(timeElement);
     const components = [
         aboutOptionComponent,
         backgroundImageComponent,
@@ -450,9 +472,10 @@ document.addEventListener('DOMContentLoaded', function() {
             timeAlignElement,
             timeColorElement,
             timeFontComponent.elements.self,
-            timeSizeElement
+            timeSizeComponent.elements.self
         ]),
-        timeFontComponent
+        timeFontComponent,
+        timeSizeComponent
     ];
 
 
@@ -469,8 +492,7 @@ document.addEventListener('DOMContentLoaded', function() {
     for (const [element, callback] of [
         [backgroundColorElement, showElement(backgroundColorInputElement)],
         [timeAlignElement, showTimeAlignOptions],
-        [timeColorElement, showElement(timeColorInputElement)],
-        [timeSizeElement, showElement(timeSizeSetElement)]
+        [timeColorElement, showElement(timeColorInputElement)]
     ]) {
         element.onclick = callback;
     }
@@ -479,9 +501,6 @@ document.addEventListener('DOMContentLoaded', function() {
         [timeColorInputElement, timeElement, timeColorInputElement, 'color']
     ]) {
         element.onchange = updateColor(target, source, itemKey);
-    }
-    for (const element of [timeSizeInputElement, timeSizeSelectElement]) {
-        element.onchange = updateSize;
     }
 
     // load DOM
