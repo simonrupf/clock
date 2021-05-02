@@ -39,6 +39,12 @@ document.addEventListener('DOMContentLoaded', function() {
     };
 
     // functions
+    function appendFormElements(elements, formElement) {
+        elements.self.appendChild(elements.label);
+        elements.self.appendChild(document.createElement('br'));
+        elements.self.appendChild(formElement);
+    }
+
     function appendOptions(targetElement, options) {
         for (const option of options) {
             const optionElement = document.createElement('option');
@@ -316,9 +322,7 @@ document.addEventListener('DOMContentLoaded', function() {
             input.setAttribute('placeholder', 'https://example.com');
             const backgroundImage = localStorage.getItem(key);
             input.value = backgroundImage ? backgroundImage.substring(5, backgroundImage.length - 2) : this.default;
-            this.elements.self.appendChild(this.elements.label);
-            this.elements.self.appendChild(document.createElement('br'));
-            this.elements.self.appendChild(input);
+            appendFormElements(this.elements, input);
         }
     }
 
@@ -348,9 +352,7 @@ document.addEventListener('DOMContentLoaded', function() {
             updateProperties(this.elements.label, select, key, 'Font…');
             appendOptions(select, ['Browser Default', 'Serif', 'Sans-Serif', 'Cursive', 'Fantasy', 'Monospace']);
             select.value = localStorage.getItem(key);
-            this.elements.self.appendChild(this.elements.label);
-            this.elements.self.appendChild(document.createElement('br'));
-            this.elements.self.appendChild(select);
+            appendFormElements(this.elements, select);
         }
     }
 
@@ -440,9 +442,7 @@ document.addEventListener('DOMContentLoaded', function() {
             select.value = fontSize[1];
             this.elements.fieldset.appendChild(input);
             this.elements.fieldset.appendChild(select);
-            this.elements.self.appendChild(this.elements.label);
-            this.elements.self.appendChild(document.createElement('br'));
-            this.elements.self.appendChild(this.elements.fieldset);
+            appendFormElements(this.elements, this.elements.fieldset);
         }
     }
 
