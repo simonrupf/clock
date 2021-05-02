@@ -10,7 +10,6 @@ document.addEventListener('DOMContentLoaded', function() {
         }
         for (const element of [
             backgroundColorInputElement,
-            backgroundImageInputElement,
             backgroundOptionsElement,
             timeAlignTableElement,
             timeColorInputElement,
@@ -169,13 +168,6 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     }
 
-    function updateBackgroundImage() {
-        hideAll();
-        setPersistentStyles(document.body, {
-            'background-image': 'url("' + backgroundImageInputElement.value + '")'
-        });
-    }
-
     function updateColor(targetElement, colorPickerElement, itemKey) {
         return function(event) {
             hideAll();
@@ -211,15 +203,20 @@ document.addEventListener('DOMContentLoaded', function() {
         timeElement.style.margin = '1em';
 
         // restore or initialize persisted styles
-        for (const [key, defaultValue, element] of [
+        const persistedStyles = [
             ['align-items', 'center', document.body],
             ['justify-content', 'center', document.body],
             ['color', '#000000', timeElement],
             ['background-color', '#ffffff', document.body],
-            ['background-image', '', document.body],
             ['font-family', '', timeElement],
             ['font-size', '1em', timeElement]
-        ]) {
+        ];
+        for (const component of components) {
+            if (component.key) {
+                persistedStyles.push([component.key, component.default, component.target]);
+            }
+        }
+        for (const [key, defaultValue, element] of persistedStyles) {
             let value = localStorage.getItem(key);
             if (!value) {
                 localStorage.setItem(key, defaultValue);
@@ -233,7 +230,6 @@ document.addEventListener('DOMContentLoaded', function() {
         // text
         timeAlignElement.textContent = 'Alignment…';
         backgroundColorLabelElement.textContent = timeColorLabelElement.textContent = 'Color…';
-        backgroundImageLabelElement.textContent = 'Image URL…';
         timeFontLabelElement.textContent = 'Font…';
         timeSizeLabelElement.textContent = 'Size…';
 
@@ -250,18 +246,6 @@ document.addEventListener('DOMContentLoaded', function() {
             colorElement.appendChild(document.createElement('br'));
             colorElement.appendChild(inputElement);
         }
-
-        // background image
-        backgroundImageLabelElement.setAttribute('for', 'backgroundImage');
-        backgroundImageInputElement.setAttribute('id', 'backgroundImage');
-        backgroundImageInputElement.setAttribute('type', 'url');
-        backgroundImageInputElement.setAttribute('pattern', 'https://.*');
-        backgroundImageInputElement.setAttribute('placeholder', 'https://example.com');
-        const backgroundImage = localStorage.getItem('background-image');
-        backgroundImageInputElement.value = backgroundImage ? backgroundImage.substring(5, backgroundImage.length - 2) : '';
-        backgroundImageElement.appendChild(backgroundImageLabelElement);
-        backgroundImageElement.appendChild(document.createElement('br'));
-        backgroundImageElement.appendChild(backgroundImageInputElement);
 
         // font
         timeFontLabelElement.setAttribute('for', 'timeFont');
@@ -333,6 +317,8 @@ document.addEventListener('DOMContentLoaded', function() {
             onHide: []
         };
         this.setup = function() {};
+        this.key = this.default = '';
+        this.target = document.body;
     }
 
     function AboutComponent(styles, optionElement) {
@@ -342,19 +328,58 @@ document.addEventListener('DOMContentLoaded', function() {
         });
 
         const self = this.elements.self;
+
         function showAbout(event) {
             hideAllEvent(event);
             self.style.display = 'block';
         }
 
-        this.events.onClick.push([this.elements.self, hideAllEvent]);
+        this.events.onClick.push([self, hideAllEvent]);
         this.events.onClick.push([this.elements.option, showAbout]);
-        this.events.onHide.push(this.elements.self);
+        this.events.onHide.push(self);
+
         this.setup = function() {
-            setStyles([this.elements.self], styles);
+            setStyles([self], styles);
             this.elements.option.textContent = 'About…';
         };
     }
+
+    function BackgroundImageComponent(selfElement) {
+        Component.call(this, {
+            self: selfElement,
+            label: document.createElement('label'),
+            input: document.createElement('input')
+        });
+
+        const input = this.elements.input;
+        const key = this.key = 'background-image';
+
+        function updateBackgroundImage() {
+            hideAll();
+            const styles = {};
+            styles[key] = 'url("' + input.value + '")';
+            setPersistentStyles(document.body, styles);
+        }
+
+        this.events.onClick.push([this.elements.self, showElement(this.elements.input)]);
+        this.events.onChange.push([input, updateBackgroundImage]);
+        this.events.onHide.push(input);
+
+        this.setup = function() {
+            this.elements.label.textContent = 'Image URL…';
+            this.elements.label.setAttribute('for', 'backgroundImage');
+            input.setAttribute('id', 'backgroundImage');
+            input.setAttribute('type', 'url');
+            input.setAttribute('pattern', 'https://.*');
+            input.setAttribute('placeholder', 'https://example.com');
+            const backgroundImage = localStorage.getItem(key);
+            input.value = backgroundImage ? backgroundImage.substring(5, backgroundImage.length - 2) : this.default;
+            this.elements.self.appendChild(this.elements.label);
+            this.elements.self.appendChild(document.createElement('br'));
+            this.elements.self.appendChild(input);
+        }
+    }
+
 
     const styles = {
         body: {
@@ -389,17 +414,16 @@ document.addEventListener('DOMContentLoaded', function() {
     };
 
     const aboutOptionElement = document.createElement('li');
+    const backgroundImageElement = document.createElement('li');
     const components = [
-        new AboutComponent(styles.options, aboutOptionElement)
+        new AboutComponent(styles.options, aboutOptionElement),
+        new BackgroundImageComponent(backgroundImageElement)
     ];
 
     const backgroundOptionsElement = document.createElement('ul');
     const backgroundColorElement = document.createElement('li');
     const backgroundColorLabelElement = document.createElement('label');
     const backgroundColorInputElement = document.createElement('input');
-    const backgroundImageElement = document.createElement('li');
-    const backgroundImageLabelElement = document.createElement('label');
-    const backgroundImageInputElement = document.createElement('input');
     const timeElement = document.createElement('span');
     const timeOptionsElement = document.createElement('ul');
     const timeAlignElement = document.createElement('li');
@@ -428,7 +452,6 @@ document.addEventListener('DOMContentLoaded', function() {
     }
     for (const [element, callback] of [
         [backgroundColorElement, showElement(backgroundColorInputElement)],
-        [backgroundImageElement, showElement(backgroundImageInputElement)],
         [backgroundOptionsElement, event => event.stopPropagation()],
         [document.body, showOptions(backgroundOptionsElement)],
         [timeElement, showOptions(timeOptionsElement)],
@@ -449,7 +472,6 @@ document.addEventListener('DOMContentLoaded', function() {
     for (const element of [timeSizeInputElement, timeSizeSelectElement]) {
         element.onchange = updateSize;
     }
-    backgroundImageInputElement.onchange = updateBackgroundImage;
     timeFontSelectElement.onchange = updateFont;
 
     // load DOM
