@@ -99,29 +99,6 @@ document.addEventListener('DOMContentLoaded', function() {
         timeElement.textContent = (new Date()).toLocaleTimeString();
     }
 
-    function updateLayout() {
-        // restore or initialize persisted styles
-        const persistedStyles = [];
-        for (const component of components) {
-            if (component.key) {
-                const keys = component.key.split('_');
-                for (const key of keys) {
-                    persistedStyles.push([key, component.default, component.target]);
-                }
-            }
-        }
-        for (const [key, defaultValue, element] of persistedStyles) {
-            let value = localStorage.getItem(key);
-            if (!value) {
-                localStorage.setItem(key, defaultValue);
-                value = defaultValue;
-            }
-            if (value) {
-                element.style[key] = value;
-            }
-        }
-    }
-
     // classes
     function Component(elements = {}) {
         this.elements = elements;
@@ -498,11 +475,27 @@ document.addEventListener('DOMContentLoaded', function() {
     updateTime();
     document.body.appendChild(timeElement);
     hideAll();
+
+    // set styles
     setStyles([document.documentElement, document.body], styles.root);
     setStyles([document.body], styles.body);
     timeElement.style.margin = '1em';
-    updateLayout();
+
+    // restore or initialize persisted styles
     for (const component of components) {
+        if (component.key) {
+            const keys = component.key.split('_');
+            for (const key of keys) {
+                let value = localStorage.getItem(key);
+                if (!value) {
+                    localStorage.setItem(key, component.default);
+                    value = component.default;
+                }
+                if (value) {
+                    component.target.style[key] = value;
+                }
+            }
+        }
         component.setup();
     }
 });
