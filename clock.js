@@ -95,6 +95,15 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     }
 
+    function update(key, valueGetter, target) {
+        return function(event) {
+            hideAll();
+            const styles = {};
+            styles[key] = valueGetter();
+            setPersistentStyles(target, styles);
+        }
+    }
+
     function updateProperties(labelElement, idElement, key, labelText) {
         labelElement.textContent = labelText;
         labelElement.setAttribute('for', key);
@@ -112,6 +121,9 @@ document.addEventListener('DOMContentLoaded', function() {
             onClick: [],
             onChange: [],
             onHide: []
+        };
+        this.getValue = function() {
+            return elements.setting.value;
         };
         this.setup = function() {};
         this.key = this.default = '';
@@ -261,17 +273,14 @@ document.addEventListener('DOMContentLoaded', function() {
             label: document.createElement('label'),
             setting: document.createElement('input')
         });
-        setEvents(this, update);
 
         const input = this.elements.setting;
         const key = this.key = 'background-image';
 
-        function update() {
-            hideAll();
-            const styles = {};
-            styles[key] = 'url("' + input.value + '")';
-            setPersistentStyles(document.body, styles);
-        }
+        this.getValue = function() {
+            return 'url("' + input.value + '")';
+        };
+        setEvents(this, update(key, this.getValue, this.target));
 
         this.setup = function() {
             updateProperties(this.elements.label, input, key, 'Image URL…');
@@ -290,19 +299,12 @@ document.addEventListener('DOMContentLoaded', function() {
             label: document.createElement('label'),
             setting: document.createElement('input')
         });
-        setEvents(this, update);
 
         const input = this.elements.setting;
         this.key = key;
         this.default = defaultValue;
         this.target = target;
-
-        function update() {
-            hideAll();
-            const styles = {};
-            styles[key] = input.value;
-            setPersistentStyles(target, styles);
-        }
+        setEvents(this, update(key, this.getValue, target));
 
         this.setup = function() {
             updateProperties(this.elements.label, input, key, 'Color…');
@@ -318,18 +320,11 @@ document.addEventListener('DOMContentLoaded', function() {
             label: document.createElement('label'),
             setting: document.createElement('select')
         });
-        setEvents(this, update);
 
         const select = this.elements.setting;
         const key = this.key = 'font-family';
         this.target = target;
-
-        function update() {
-            hideAll();
-            const styles = {};
-            styles[key] = select.value;
-            setPersistentStyles(target, styles);
-        }
+        setEvents(this, update(key, this.getValue, target));
 
         this.setup = function() {
             updateProperties(this.elements.label, select, key, 'Font…');
@@ -399,18 +394,16 @@ document.addEventListener('DOMContentLoaded', function() {
         this.default = '1em';
         this.target = target;
 
-        setEvents(this, update);
-        this.events.onChange = [
-            [input, update],
-            [select, update]
-        ];
+        this.getValue = function() {
+            return input.value + select.value;
+        };
 
-        function update() {
-            hideAll();
-            const styles = {};
-            styles[key] = input.value + select.value;
-            setPersistentStyles(target, styles);
-        }
+        const updateCallback = update(key, this.getValue, target);
+        setEvents(this, updateCallback);
+        this.events.onChange = [
+            [input, updateCallback],
+            [select, updateCallback]
+        ];
 
         this.setup = function() {
             updateProperties(this.elements.label, input, key, 'Size…');
@@ -457,18 +450,6 @@ document.addEventListener('DOMContentLoaded', function() {
         timeSizeComponent
     ];
 
-
-    // prepare events
-    setInterval(updateTime, 1000);
-    for (const component of components) {
-        for (const [element, callback] of component.events.onClick) {
-            element.onclick = callback;
-        }
-        for (const [element, callback] of component.events.onChange) {
-            element.onchange = callback;
-        }
-    }
-
     // load DOM
     updateTime();
     document.body.appendChild(timeElement);
@@ -479,8 +460,15 @@ document.addEventListener('DOMContentLoaded', function() {
     setStyles([document.body], styles.body);
     timeElement.style.margin = '1em';
 
-    // restore or initialize persisted styles
+    // prepare events, restore or initialize persisted styles
+    setInterval(updateTime, 1000);
     for (const component of components) {
+        for (const [element, callback] of component.events.onClick) {
+            element.onclick = callback;
+        }
+        for (const [element, callback] of component.events.onChange) {
+            element.onchange = callback;
+        }
         if (component.key) {
             const keys = component.key.split('_');
             for (const key of keys) {
