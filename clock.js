@@ -191,6 +191,12 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     }
 
+    function updateProperties(labelElement, idElement, key, labelText) {
+        labelElement.textContent = labelText;
+        labelElement.setAttribute('for', key);
+        idElement.setAttribute('id', key);
+    }
+
     function updateTime() {
         timeElement.textContent = (new Date()).toLocaleTimeString();
     }
@@ -304,9 +310,7 @@ document.addEventListener('DOMContentLoaded', function() {
         this.events.onHide.push(input);
 
         this.setup = function() {
-            this.elements.label.textContent = 'Image URL…';
-            this.elements.label.setAttribute('for', key);
-            input.setAttribute('id', key);
+            updateProperties(this.elements.label, input, key, 'Image URL…');
             input.setAttribute('type', 'url');
             input.setAttribute('pattern', 'https://.*');
             input.setAttribute('placeholder', 'https://example.com');
@@ -341,9 +345,7 @@ document.addEventListener('DOMContentLoaded', function() {
         this.events.onHide.push(select);
 
         this.setup = function() {
-            this.elements.label.textContent = 'Font…';
-            this.elements.label.setAttribute('for', key);
-            select.setAttribute('id', key);
+            updateProperties(this.elements.label, select, key, 'Font…');
             appendOptions(select, ['Browser Default', 'Serif', 'Sans-Serif', 'Cursive', 'Fantasy', 'Monospace']);
             select.value = localStorage.getItem(key);
             this.elements.self.appendChild(this.elements.label);
@@ -426,11 +428,9 @@ document.addEventListener('DOMContentLoaded', function() {
         this.events.onHide.push(this.elements.fieldset);
 
         this.setup = function() {
-            this.elements.label.textContent = 'Size…';
-            this.elements.label.setAttribute('for', key);
+            updateProperties(this.elements.label, input, key, 'Size…');
             setStyles([this.elements.fieldset], styles.fieldgroup);
             setStyles([input], styles.input);
-            input.setAttribute('id', key);
             input.setAttribute('type', 'number');
             input.setAttribute('min', '1');
             select.setAttribute('id', key + '-unit');
