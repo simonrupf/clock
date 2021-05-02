@@ -39,6 +39,15 @@ document.addEventListener('DOMContentLoaded', function() {
     };
 
     // functions
+    function appendOptions(targetElement, options) {
+        for (const option of options) {
+            const optionElement = document.createElement('option');
+            optionElement.textContent = option;
+            optionElement.value = option == 'Browser Default' ? '' : option;
+            targetElement.appendChild(optionElement);
+        }
+    }
+
     function hideAll() {
         for (const component of components) {
             for (const element of component.events.onHide) {
@@ -335,12 +344,7 @@ document.addEventListener('DOMContentLoaded', function() {
             this.elements.label.textContent = 'Font…';
             this.elements.label.setAttribute('for', key);
             select.setAttribute('id', key);
-            for (const fontFamily of ['Browser Default', 'Serif', 'Sans-Serif', 'Cursive', 'Fantasy', 'Monospace']) {
-                const timeFontOptionElement = document.createElement('option');
-                timeFontOptionElement.textContent = fontFamily;
-                timeFontOptionElement.value = fontFamily == 'Browser Default' ? this.default : fontFamily;
-                select.appendChild(timeFontOptionElement);
-            }
+            appendOptions(select, ['Browser Default', 'Serif', 'Sans-Serif', 'Cursive', 'Fantasy', 'Monospace']);
             select.value = localStorage.getItem(key);
             this.elements.self.appendChild(this.elements.label);
             this.elements.self.appendChild(document.createElement('br'));
@@ -430,13 +434,7 @@ document.addEventListener('DOMContentLoaded', function() {
             input.setAttribute('type', 'number');
             input.setAttribute('min', '1');
             select.setAttribute('id', key + '-unit');
-
-            for (const unit of ['em', 'px', 'pt', 'cm', 'mm', 'in', 'pc', '%']) {
-                const timeSizeOptionElement = document.createElement('option');
-                timeSizeOptionElement.textContent = unit;
-                timeSizeOptionElement.value = unit;
-                select.appendChild(timeSizeOptionElement);
-            }
+            appendOptions(select, ['em', 'px', 'pt', 'cm', 'mm', 'in', 'pc', '%']);
             const fontSize = localStorage.getItem(key).match(/[a-z%]+|[0-9]+/g);
             input.value = fontSize[0];
             select.value = fontSize[1];
