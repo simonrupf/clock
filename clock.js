@@ -67,6 +67,12 @@ document.addEventListener('DOMContentLoaded', function() {
         hideAll();
     }
 
+    function setEvents(component, callback) {
+        component.events.onClick.push([component.elements.self, showElement(component.elements.setting)]);
+        component.events.onChange.push([component.elements.setting, callback]);
+        component.events.onHide.push(component.elements.setting);
+    };
+
     function setStyles(elements, styles) {
         for (const element of elements) {
             for (const [key, value] of Object.entries(styles)) {
@@ -139,10 +145,10 @@ document.addEventListener('DOMContentLoaded', function() {
         Component.call(this, {
             self: document.createElement('li'),
             label: document.createElement('label'),
-            table: document.createElement('table')
+            setting: document.createElement('table')
         });
 
-        const table = this.elements.table;
+        const table = this.elements.setting;
         const key = this.key = 'justify-content_align-items';
         const target = this.target;
         this.default = 'center';
@@ -240,7 +246,7 @@ document.addEventListener('DOMContentLoaded', function() {
             }
         }
 
-        this.events.onClick.push([this.elements.label, show]);
+        this.events.onClick.push([this.elements.self, show]);
         this.events.onHide.push(table);
 
         this.setup = function() {
@@ -253,10 +259,11 @@ document.addEventListener('DOMContentLoaded', function() {
         Component.call(this, {
             self: document.createElement('li'),
             label: document.createElement('label'),
-            input: document.createElement('input')
+            setting: document.createElement('input')
         });
+        setEvents(this, update);
 
-        const input = this.elements.input;
+        const input = this.elements.setting;
         const key = this.key = 'background-image';
 
         function update() {
@@ -265,10 +272,6 @@ document.addEventListener('DOMContentLoaded', function() {
             styles[key] = 'url("' + input.value + '")';
             setPersistentStyles(document.body, styles);
         }
-
-        this.events.onClick.push([this.elements.self, showElement(this.elements.input)]);
-        this.events.onChange.push([input, update]);
-        this.events.onHide.push(input);
 
         this.setup = function() {
             updateProperties(this.elements.label, input, key, 'Image URL…');
@@ -285,10 +288,11 @@ document.addEventListener('DOMContentLoaded', function() {
         Component.call(this, {
             self: document.createElement('li'),
             label: document.createElement('label'),
-            input: document.createElement('input')
+            setting: document.createElement('input')
         });
+        setEvents(this, update);
 
-        const input = this.elements.input;
+        const input = this.elements.setting;
         this.key = key;
         this.default = defaultValue;
         this.target = target;
@@ -299,10 +303,6 @@ document.addEventListener('DOMContentLoaded', function() {
             styles[key] = input.value;
             setPersistentStyles(target, styles);
         }
-
-        this.events.onClick.push([this.elements.label, showElement(input)]);
-        this.events.onChange.push([input, update]);
-        this.events.onHide.push(input);
 
         this.setup = function() {
             updateProperties(this.elements.label, input, key, 'Color…');
@@ -316,10 +316,11 @@ document.addEventListener('DOMContentLoaded', function() {
         Component.call(this, {
             self: document.createElement('li'),
             label: document.createElement('label'),
-            select: document.createElement('select')
+            setting: document.createElement('select')
         });
+        setEvents(this, update);
 
-        const select = this.elements.select;
+        const select = this.elements.setting;
         const key = this.key = 'font-family';
         this.target = target;
 
@@ -329,10 +330,6 @@ document.addEventListener('DOMContentLoaded', function() {
             styles[key] = select.value;
             setPersistentStyles(target, styles);
         }
-
-        this.events.onClick.push([this.elements.label, showElement(select)]);
-        this.events.onChange.push([select, update]);
-        this.events.onHide.push(select);
 
         this.setup = function() {
             updateProperties(this.elements.label, select, key, 'Font…');
@@ -390,7 +387,7 @@ document.addEventListener('DOMContentLoaded', function() {
     function SizeComponent(target) {
         Component.call(this, {
             self: document.createElement('li'),
-            fieldset: document.createElement('fieldset'),
+            setting: document.createElement('fieldset'),
             input: document.createElement('input'),
             label: document.createElement('label'),
             select: document.createElement('select')
@@ -402,6 +399,12 @@ document.addEventListener('DOMContentLoaded', function() {
         this.default = '1em';
         this.target = target;
 
+        setEvents(this, update);
+        this.events.onChange = [
+            [input, update],
+            [select, update]
+        ];
+
         function update() {
             hideAll();
             const styles = {};
@@ -409,14 +412,9 @@ document.addEventListener('DOMContentLoaded', function() {
             setPersistentStyles(target, styles);
         }
 
-        this.events.onClick.push([this.elements.label, showElement(this.elements.fieldset)]);
-        this.events.onChange.push([input, update]);
-        this.events.onChange.push([select, update]);
-        this.events.onHide.push(this.elements.fieldset);
-
         this.setup = function() {
             updateProperties(this.elements.label, input, key, 'Size…');
-            setStyles([this.elements.fieldset], styles.fieldgroup);
+            setStyles([this.elements.setting], styles.fieldgroup);
             setStyles([input], styles.input);
             input.setAttribute('type', 'number');
             input.setAttribute('min', '1');
@@ -425,9 +423,9 @@ document.addEventListener('DOMContentLoaded', function() {
             const fontSize = localStorage.getItem(key).match(/[a-z%]+|[0-9]+/g);
             input.value = fontSize[0];
             select.value = fontSize[1];
-            this.elements.fieldset.appendChild(input);
-            this.elements.fieldset.appendChild(select);
-            appendFormElements(this.elements, this.elements.fieldset);
+            this.elements.setting.appendChild(input);
+            this.elements.setting.appendChild(select);
+            appendFormElements(this.elements, this.elements.setting);
         }
     }
 
