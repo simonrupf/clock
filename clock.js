@@ -334,9 +334,9 @@ document.addEventListener('DOMContentLoaded', function() {
             padding: '0 0.2em'
         },
         dashSelected: {
-            color: 'white',
             'background-color': 'black',
-            'border-radius': '0.2em'
+            'border-radius': '0.2em',
+            color: 'white'
         },
         fieldgroup: {
             border: '0',
@@ -344,10 +344,12 @@ document.addEventListener('DOMContentLoaded', function() {
             padding: '0'
         },
         options: {
-            margin: '1em',
-            padding: '0.5em 2em',
             'background-color': 'rgba(255, 255, 255, 0.7)',
-            'border-radius': '0.2em'
+            'border-radius': '0.2em',
+            color: 'black',
+            'font-family': 'sans-serif',
+            margin: '1em',
+            padding: '0.5em 2em'
         },
         root: {
             height: '100%',
