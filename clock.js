@@ -1,9 +1,14 @@
 'use strict';
 
 document.addEventListener('DOMContentLoaded', function() {
+    // functions
     function hideAll() {
+        for (const component of components) {
+            for (const element of component.events.onHide) {
+                element.style.display = 'none'
+            }
+        }
         for (const element of [
-            aboutElement,
             backgroundColorInputElement,
             backgroundImageInputElement,
             backgroundOptionsElement,
@@ -35,11 +40,6 @@ document.addEventListener('DOMContentLoaded', function() {
             localStorage.setItem(key, value);
             element.style[key] = value;
         }
-    }
-
-    function showAbout(event) {
-        hideAllEvent(event);
-        aboutElement.style.display = 'block';
     }
 
     function showElement(element) {
@@ -206,7 +206,7 @@ document.addEventListener('DOMContentLoaded', function() {
         // styles
         setStyles([document.documentElement, document.body], styles.root);
         setStyles([document.body], styles.body);
-        setStyles([aboutElement, backgroundOptionsElement, timeOptionsElement], styles.options);
+        setStyles([backgroundOptionsElement, timeOptionsElement], styles.options);
         setStyles([timeSizeSetElement], styles.fieldgroup);
         timeElement.style.margin = '1em';
 
@@ -236,7 +236,6 @@ document.addEventListener('DOMContentLoaded', function() {
         backgroundImageLabelElement.textContent = 'Image URL…';
         timeFontLabelElement.textContent = 'Font…';
         timeSizeLabelElement.textContent = 'Size…';
-        aboutOptionElement.textContent = 'About…';
 
         // color picker
         for (const [pickerId, itemKey, labelElement, inputElement, colorElement] of [
@@ -325,6 +324,38 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     }
 
+    // classes
+    function Component(elements = {}) {
+        this.elements = elements;
+        this.events = {
+            onClick: [],
+            onChange: [],
+            onHide: []
+        };
+        this.setup = function() {};
+    }
+
+    function AboutComponent(styles, optionElement) {
+        Component.call(this, {
+            self: document.body.childNodes[1],
+            option: optionElement
+        });
+
+        const self = this.elements.self;
+        function showAbout(event) {
+            hideAllEvent(event);
+            self.style.display = 'block';
+        }
+
+        this.events.onClick.push([this.elements.self, hideAllEvent]);
+        this.events.onClick.push([this.elements.option, showAbout]);
+        this.events.onHide.push(this.elements.self);
+        this.setup = function() {
+            setStyles([this.elements.self], styles);
+            this.elements.option.textContent = 'About…';
+        };
+    }
+
     const styles = {
         body: {
             cursor: 'pointer',
@@ -357,7 +388,11 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     };
 
-    const aboutElement = document.body.childNodes[1];
+    const aboutOptionElement = document.createElement('li');
+    const components = [
+        new AboutComponent(styles.options, aboutOptionElement)
+    ];
+
     const backgroundOptionsElement = document.createElement('ul');
     const backgroundColorElement = document.createElement('li');
     const backgroundColorLabelElement = document.createElement('label');
@@ -380,13 +415,18 @@ document.addEventListener('DOMContentLoaded', function() {
     const timeSizeSetElement = document.createElement('fieldset');
     const timeSizeInputElement = document.createElement('input');
     const timeSizeSelectElement = document.createElement('select');
-    const aboutOptionElement = document.createElement('li');
 
     // prepare events
     setInterval(updateTime, 1000);
+    for (const component of components) {
+        for (const [element, callback] of component.events.onClick) {
+            element.onclick = callback;
+        }
+        for (const [element, callback] of component.events.onChange) {
+            element.onchange = callback;
+        }
+    }
     for (const [element, callback] of [
-        [aboutElement, hideAllEvent],
-        [aboutOptionElement, showAbout],
         [backgroundColorElement, showElement(backgroundColorInputElement)],
         [backgroundImageElement, showElement(backgroundImageInputElement)],
         [backgroundOptionsElement, event => event.stopPropagation()],
@@ -417,4 +457,7 @@ document.addEventListener('DOMContentLoaded', function() {
     document.body.appendChild(timeElement);
     hideAll();
     updateLayout();
+    for (const component of components) {
+        component.setup();
+    }
 });
