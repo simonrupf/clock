@@ -62,7 +62,6 @@ document.addEventListener('DOMContentLoaded', function() {
         }
         for (const element of [
             backgroundColorInputElement,
-            timeAlignTableElement,
             timeColorInputElement
         ]) {
             element.style.display = 'none'
@@ -96,98 +95,6 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     }
 
-    function showTimeAlignOptions() {
-        event.stopPropagation();
-
-        const alignmentTable = [
-            [
-                {
-                    symbol: '⭶',
-                    hAlign: 'start',
-                    vAlign: 'start'
-                },{
-                    symbol: '⭱',
-                    hAlign: 'center',
-                    vAlign: 'start'
-                },{
-                    symbol: '⭷',
-                    hAlign: 'end',
-                    vAlign: 'start'
-                }
-            ],[
-                {
-                    symbol: '⭰',
-                    hAlign: 'start',
-                    vAlign: 'center'
-                },{
-                    symbol: '✛',
-                    hAlign: 'center',
-                    vAlign: 'center'
-                },{
-                    symbol: '⭲',
-                    hAlign: 'end',
-                    vAlign: 'center'
-                }
-            ],[
-                {
-                    symbol: '⭹',
-                    hAlign: 'start',
-                    vAlign: 'end'
-                },{
-                    symbol: '⭳',
-                    hAlign: 'center',
-                    vAlign: 'end'
-                },{
-                    symbol: '⭸',
-                    hAlign: 'end',
-                    vAlign: 'end'
-                }
-            ]
-        ];
-        const alignmentMap = {
-            start: ['left', 'top'],
-            center: ['center', 'middle'],
-            end: ['right', 'bottom']
-        }
-        const horizontal = localStorage.getItem('justify-content');
-        const vertical = localStorage.getItem('align-items');
-
-        // clear table and re-draw it
-        timeAlignTableElement.textContent = '';
-        for (const row of alignmentTable) {
-            const alignTableRow = document.createElement('tr');
-            for (const cell of row) {
-                const alignTableDash = document.createElement('td');
-                alignTableDash.textContent = cell.symbol;
-                const dashStyles = Object.assign({}, styles.dash);
-                dashStyles['text-align'] = alignmentMap[cell.hAlign][0];
-                dashStyles['vertical-align'] = alignmentMap[cell.vAlign][1];
-                if (
-                    horizontal == cell.hAlign &&
-                    vertical == cell.vAlign
-                ) {
-                    Object.assign(dashStyles, styles.dashSelected);
-                }
-                setStyles([alignTableDash], dashStyles);
-                alignTableDash.onclick = updateAlignment(cell.hAlign, cell.vAlign);
-                alignTableRow.appendChild(alignTableDash);
-            }
-            timeAlignTableElement.appendChild(alignTableRow);
-        }
-        timeAlignTableElement.style.display = 'block';
-    }
-
-    function updateAlignment(horizontal, vertical) {
-        return function(event) {
-            event.stopPropagation();
-            hideAll();
-            setPersistentStyles(document.body, {
-                'justify-content': horizontal,
-                'align-items': vertical
-            });
-        }
-    }
-
     function updateColor(targetElement, colorPickerElement, itemKey) {
         return function(event) {
             hideAll();
@@ -208,21 +115,17 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 
     function updateLayout() {
-        // styles
-        setStyles([document.documentElement, document.body], styles.root);
-        setStyles([document.body], styles.body);
-        timeElement.style.margin = '1em';
-
         // restore or initialize persisted styles
         const persistedStyles = [
-            ['align-items', 'center', document.body],
-            ['justify-content', 'center', document.body],
             ['color', '#000000', timeElement],
             ['background-color', '#ffffff', document.body]
         ];
         for (const component of components) {
             if (component.key) {
-                persistedStyles.push([component.key, component.default, component.target]);
+                const keys = component.key.split('_');
+                for (const key of keys) {
+                    persistedStyles.push([key, component.default, component.target]);
+                }
             }
         }
         for (const [key, defaultValue, element] of persistedStyles) {
@@ -237,7 +140,6 @@ document.addEventListener('DOMContentLoaded', function() {
         }
 
         // text
-        timeAlignElement.textContent = 'Alignment…';
         backgroundColorLabelElement.textContent = timeColorLabelElement.textContent = 'Color…';
 
         // color picker
@@ -253,9 +155,6 @@ document.addEventListener('DOMContentLoaded', function() {
             colorElement.appendChild(document.createElement('br'));
             colorElement.appendChild(inputElement);
         }
-
-        // menus
-        timeAlignElement.appendChild(timeAlignTableElement);
     }
 
     // classes
@@ -292,6 +191,121 @@ document.addEventListener('DOMContentLoaded', function() {
             setStyles([self], styles.options);
             this.elements.option.textContent = 'About…';
         };
+    }
+
+    function AlignComponent() {
+        Component.call(this, {
+            self: document.createElement('li'),
+            label: document.createElement('label'),
+            table: document.createElement('table')
+        });
+
+        const table = this.elements.table;
+        const key = this.key = 'justify-content_align-items';
+        const target = this.target;
+        this.default = 'center';
+
+        function show(event) {
+            event.stopPropagation();
+
+            const alignmentTable = [
+                [
+                    {
+                        symbol: '⭶',
+                        hAlign: 'start',
+                        vAlign: 'start'
+                    },{
+                        symbol: '⭱',
+                        hAlign: 'center',
+                        vAlign: 'start'
+                    },{
+                        symbol: '⭷',
+                        hAlign: 'end',
+                        vAlign: 'start'
+                    }
+                ],[
+                    {
+                        symbol: '⭰',
+                        hAlign: 'start',
+                        vAlign: 'center'
+                    },{
+                        symbol: '✛',
+                        hAlign: 'center',
+                        vAlign: 'center'
+                    },{
+                        symbol: '⭲',
+                        hAlign: 'end',
+                        vAlign: 'center'
+                    }
+                ],[
+                    {
+                        symbol: '⭹',
+                        hAlign: 'start',
+                        vAlign: 'end'
+                    },{
+                        symbol: '⭳',
+                        hAlign: 'center',
+                        vAlign: 'end'
+                    },{
+                        symbol: '⭸',
+                        hAlign: 'end',
+                        vAlign: 'end'
+                    }
+                ]
+            ];
+            const alignmentMap = {
+                start: ['left', 'top'],
+                center: ['center', 'middle'],
+                end: ['right', 'bottom']
+            }
+            const [horizontalKey, verticalKey] = key.split('_');
+            const horizontal = localStorage.getItem(horizontalKey);
+            const vertical = localStorage.getItem(verticalKey);
+
+            // clear the table and re-draw it
+            table.textContent = '';
+            for (const row of alignmentTable) {
+                const alignTableRow = document.createElement('tr');
+                for (const cell of row) {
+                    const alignTableDash = document.createElement('td');
+                    alignTableDash.textContent = cell.symbol;
+                    const dashStyles = Object.assign({
+                        'text-align': alignmentMap[cell.hAlign][0],
+                        'vertical-align': alignmentMap[cell.vAlign][1]
+                    }, styles.dash);
+                    if (
+                        horizontal == cell.hAlign &&
+                        vertical == cell.vAlign
+                    ) {
+                        Object.assign(dashStyles, styles.dashSelected);
+                    }
+                    setStyles([alignTableDash], dashStyles);
+                    const globalStyles = {};
+                    globalStyles[horizontalKey] = cell.hAlign;
+                    globalStyles[verticalKey] = cell.vAlign;
+                    alignTableDash.onclick = update(globalStyles);
+                    alignTableRow.appendChild(alignTableDash);
+                }
+                table.appendChild(alignTableRow);
+            }
+            table.style.display = 'block';
+        }
+
+        function update(styles) {
+            return function(event) {
+                event.stopPropagation();
+                hideAll();
+                setPersistentStyles(target, styles);
+            }
+        }
+
+        this.events.onClick.push([this.elements.label, show]);
+        this.events.onHide.push(table);
+
+        this.setup = function() {
+            updateProperties(this.elements.label, table, key, 'Alignment…');
+            appendFormElements(this.elements, table);
+        }
     }
 
     function BackgroundImageComponent() {
@@ -451,8 +465,7 @@ document.addEventListener('DOMContentLoaded', function() {
     const backgroundColorLabelElement = document.createElement('label');
     const backgroundColorInputElement = document.createElement('input');
     const backgroundImageComponent = new BackgroundImageComponent();
-    const timeAlignElement = document.createElement('li');
-    const timeAlignTableElement = document.createElement('table');
+    const timeAlignComponent = new AlignComponent();
     const timeColorElement = document.createElement('li');
     const timeColorLabelElement = document.createElement('label');
     const timeColorInputElement = document.createElement('input');
@@ -467,11 +480,12 @@ document.addEventListener('DOMContentLoaded', function() {
             backgroundImageComponent.elements.self
         ]),
         new OptionComponent(styles.options, timeElement, aboutOptionComponent.elements.option, [
-            timeAlignElement,
+            timeAlignComponent.elements.self,
             timeColorElement,
             timeFontComponent.elements.self,
             timeSizeComponent.elements.self
         ]),
+        timeAlignComponent,
         timeFontComponent,
         timeSizeComponent
     ];
@@ -489,7 +503,6 @@ document.addEventListener('DOMContentLoaded', function() {
     }
     for (const [element, callback] of [
         [backgroundColorElement, showElement(backgroundColorInputElement)],
-        [timeAlignElement, showTimeAlignOptions],
         [timeColorElement, showElement(timeColorInputElement)]
     ]) {
         element.onclick = callback;
@@ -505,6 +518,9 @@ document.addEventListener('DOMContentLoaded', function() {
     updateTime();
     document.body.appendChild(timeElement);
     hideAll();
+    setStyles([document.documentElement, document.body], styles.root);
+    setStyles([document.body], styles.body);
+    timeElement.style.margin = '1em';
     updateLayout();
     for (const component of components) {
         component.setup();
