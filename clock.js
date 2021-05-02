@@ -12,7 +12,6 @@ document.addEventListener('DOMContentLoaded', function() {
             backgroundColorInputElement,
             timeAlignTableElement,
             timeColorInputElement,
-            timeFontSelectElement,
             timeSizeSetElement
         ]) {
             element.style.display = 'none'
@@ -147,13 +146,6 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     }
 
-    function updateFont() {
-        hideAll();
-        setPersistentStyles(timeElement, {
-            'font-family': timeFontSelectElement.value
-        });
-    }
-
     function updateSize() {
         setPersistentStyles(timeElement, {
             'font-size': timeSizeInputElement.value + timeSizeSelectElement.value
@@ -199,7 +191,6 @@ document.addEventListener('DOMContentLoaded', function() {
         // text
         timeAlignElement.textContent = 'Alignment…';
         backgroundColorLabelElement.textContent = timeColorLabelElement.textContent = 'Color…';
-        timeFontLabelElement.textContent = 'Font…';
         timeSizeLabelElement.textContent = 'Size…';
 
         // color picker
@@ -215,20 +206,6 @@ document.addEventListener('DOMContentLoaded', function() {
             colorElement.appendChild(document.createElement('br'));
             colorElement.appendChild(inputElement);
         }
-
-        // font
-        timeFontLabelElement.setAttribute('for', 'timeFont');
-        timeFontSelectElement.setAttribute('id', 'timeFont');
-        for (const fontFamily of ['Browser Default', 'Serif', 'Sans-Serif', 'Cursive', 'Fantasy', 'Monospace']) {
-            const timeFontOptionElement = document.createElement('option');
-            timeFontOptionElement.textContent = fontFamily;
-            timeFontOptionElement.value = fontFamily == 'Browser Default' ? '' : fontFamily;
-            timeFontSelectElement.appendChild(timeFontOptionElement);
-        }
-        timeFontSelectElement.value = localStorage.getItem('font-family');
-        timeFontElement.appendChild(timeFontLabelElement);
-        timeFontElement.appendChild(document.createElement('br'));
-        timeFontElement.appendChild(timeFontSelectElement);
 
         // size
         timeSizeLabelElement.setAttribute('for', 'timeSizeAmount');
@@ -329,6 +306,44 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     }
 
+    function FontComponent(targetElement) {
+        Component.call(this, {
+            self: document.createElement('li'),
+            label: document.createElement('label'),
+            select: document.createElement('select')
+        });
+
+        const select = this.elements.select;
+        const key = this.key = 'font-family';
+
+        function update() {
+            hideAll();
+            const styles = {};
+            styles[key] = select.value;
+            setPersistentStyles(targetElement, styles);
+        }
+
+        this.events.onClick.push([this.elements.label, showElement(this.elements.select)]);
+        this.events.onChange.push([select, update]);
+        this.events.onHide.push(select);
+
+        this.setup = function() {
+            this.elements.label.textContent = 'Font…';
+            this.elements.label.setAttribute('for', 'timeFont');
+            this.elements.select.setAttribute('id', 'timeFont');
+            for (const fontFamily of ['Browser Default', 'Serif', 'Sans-Serif', 'Cursive', 'Fantasy', 'Monospace']) {
+                const timeFontOptionElement = document.createElement('option');
+                timeFontOptionElement.textContent = fontFamily;
+                timeFontOptionElement.value = fontFamily == 'Browser Default' ? this.default : fontFamily;
+                this.elements.select.appendChild(timeFontOptionElement);
+            }
+            this.elements.select.value = localStorage.getItem(key);
+            this.elements.self.appendChild(this.elements.label);
+            this.elements.self.appendChild(document.createElement('br'));
+            this.elements.self.appendChild(this.elements.select);
+        }
+    }
+
     function OptionComponent(styles, targetElement, aboutOptionElement, options = []) {
         Component.call(this, {
             self: document.createElement('ul')
@@ -418,9 +433,7 @@ document.addEventListener('DOMContentLoaded', function() {
     const timeColorLabelElement = document.createElement('label');
     const timeColorInputElement = document.createElement('input');
     const timeElement = document.createElement('span');
-    const timeFontElement = document.createElement('li');
-    const timeFontLabelElement = document.createElement('label');
-    const timeFontSelectElement = document.createElement('select');
+    const timeFontComponent = new FontComponent(timeElement);
     const timeSizeElement = document.createElement('li');
     const timeSizeLabelElement = document.createElement('label');
     const timeSizeSetElement = document.createElement('fieldset');
@@ -436,9 +449,10 @@ document.addEventListener('DOMContentLoaded', function() {
         new OptionComponent(styles.options, timeElement, aboutOptionComponent.elements.option, [
             timeAlignElement,
             timeColorElement,
-            timeFontElement,
+            timeFontComponent.elements.self,
             timeSizeElement
-        ])
+        ]),
+        timeFontComponent
     ];
 
 
@@ -456,7 +470,6 @@ document.addEventListener('DOMContentLoaded', function() {
         [backgroundColorElement, showElement(backgroundColorInputElement)],
         [timeAlignElement, showTimeAlignOptions],
         [timeColorElement, showElement(timeColorInputElement)],
-        [timeFontLabelElement, showElement(timeFontSelectElement)],
         [timeSizeElement, showElement(timeSizeSetElement)]
     ]) {
         element.onclick = callback;
@@ -470,7 +483,6 @@ document.addEventListener('DOMContentLoaded', function() {
     for (const element of [timeSizeInputElement, timeSizeSelectElement]) {
         element.onchange = updateSize;
     }
-    timeFontSelectElement.onchange = updateFont;
 
     // load DOM
     updateTime();
