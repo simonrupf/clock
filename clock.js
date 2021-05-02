@@ -345,24 +345,24 @@ document.addEventListener('DOMContentLoaded', function() {
             hideAllEvent(event);
             self.appendChild(aboutComponent.elements.option);
             self.style.display = 'block';
-            let left = event.clientX;
-            let top = event.clientY;
-            if (document.body.offsetWidth < (left + self.offsetWidth)) {
-                left = document.body.offsetWidth - self.offsetWidth - 20;
-                if (left < 0) {
-                    left = 0;
+            let positions = [20, 90];
+            for (const [key, eventOffset, bodyOffset, selfOffset] of [
+                [0, event.clientX, document.body.offsetWidth, self.offsetWidth],
+                [1, event.clientY, document.body.offsetHeight, self.offsetHeight]
+            ]) {
+                let offset = eventOffset;
+                if (bodyOffset < (offset + selfOffset)) {
+                    offset = bodyOffset - selfOffset - positions[key];
+                    if (offset < 0) {
+                        offset = 0;
+                    }
                 }
-            }
-            if (document.body.offsetHeight < (top + self.offsetHeight)) {
-                top = document.body.offsetHeight - self.offsetHeight - 90;
-                if (top < 0) {
-                    top = 0;
-                }
+                positions[key] = offset;
             }
             setStyles([self], {
                 position: 'absolute',
-                left: left + 'px',
-                top: top + 'px'
+                left: positions[0] + 'px',
+                top: positions[1] + 'px'
             });
         }
 
