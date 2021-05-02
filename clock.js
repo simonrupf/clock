@@ -10,12 +10,10 @@ document.addEventListener('DOMContentLoaded', function() {
         }
         for (const element of [
             backgroundColorInputElement,
-            backgroundOptionsElement,
             timeAlignTableElement,
             timeColorInputElement,
             timeFontSelectElement,
-            timeSizeSetElement,
-            timeOptionsElement
+            timeSizeSetElement
         ]) {
             element.style.display = 'none'
         }
@@ -45,34 +43,6 @@ document.addEventListener('DOMContentLoaded', function() {
         return function(event) {
             event.stopPropagation();
             element.style.display = 'block';
-        }
-    }
-
-    function showOptions(element) {
-        return function(event) {
-            event.stopPropagation();
-            hideAll();
-            element.appendChild(aboutOptionElement);
-            element.style.display = 'block';
-            let left = event.clientX;
-            let top = event.clientY;
-            if (document.body.offsetWidth < (left + element.offsetWidth)) {
-                left = document.body.offsetWidth - element.offsetWidth - 20;
-                if (left < 0) {
-                    left = 0;
-                }
-            }
-            if (document.body.offsetHeight < (top + element.offsetHeight)) {
-                top = document.body.offsetHeight - element.offsetHeight - 90;
-                if (top < 0) {
-                    top = 0;
-                }
-            }
-            setStyles([element], {
-                position: 'absolute',
-                left: left + 'px',
-                top: top + 'px'
-            });
         }
     }
 
@@ -198,7 +168,6 @@ document.addEventListener('DOMContentLoaded', function() {
         // styles
         setStyles([document.documentElement, document.body], styles.root);
         setStyles([document.body], styles.body);
-        setStyles([backgroundOptionsElement, timeOptionsElement], styles.options);
         setStyles([timeSizeSetElement], styles.fieldgroup);
         timeElement.style.margin = '1em';
 
@@ -286,26 +255,6 @@ document.addEventListener('DOMContentLoaded', function() {
 
         // menus
         timeAlignElement.appendChild(timeAlignTableElement);
-        for (const [optionsElement, options] of [
-            [
-                backgroundOptionsElement, [
-                    backgroundColorElement,
-                    backgroundImageElement
-                ]
-            ], [
-                timeOptionsElement, [
-                    timeAlignElement,
-                    timeColorElement,
-                    timeFontElement,
-                    timeSizeElement
-                ]
-            ]
-        ]) {
-            for (const element of options) {
-                optionsElement.appendChild(element);
-            }
-            document.body.appendChild(optionsElement);
-        }
     }
 
     // classes
@@ -344,9 +293,9 @@ document.addEventListener('DOMContentLoaded', function() {
         };
     }
 
-    function BackgroundImageComponent(selfElement) {
+    function BackgroundImageComponent() {
         Component.call(this, {
-            self: selfElement,
+            self: document.createElement('li'),
             label: document.createElement('label'),
             input: document.createElement('input')
         });
@@ -354,7 +303,7 @@ document.addEventListener('DOMContentLoaded', function() {
         const input = this.elements.input;
         const key = this.key = 'background-image';
 
-        function updateBackgroundImage() {
+        function update() {
             hideAll();
             const styles = {};
             styles[key] = 'url("' + input.value + '")';
@@ -362,7 +311,7 @@ document.addEventListener('DOMContentLoaded', function() {
         }
 
         this.events.onClick.push([this.elements.self, showElement(this.elements.input)]);
-        this.events.onChange.push([input, updateBackgroundImage]);
+        this.events.onChange.push([input, update]);
         this.events.onHide.push(input);
 
         this.setup = function() {
@@ -380,6 +329,51 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     }
 
+    function OptionComponent(styles, targetElement, options = []) {
+        Component.call(this, {
+            self: document.createElement('ul')
+        });
+
+        const self = this.elements.self;
+
+        function show(event) {
+            event.stopPropagation();
+            hideAll();
+            self.appendChild(aboutOptionElement);
+            self.style.display = 'block';
+            let left = event.clientX;
+            let top = event.clientY;
+            if (document.body.offsetWidth < (left + self.offsetWidth)) {
+                left = document.body.offsetWidth - self.offsetWidth - 20;
+                if (left < 0) {
+                    left = 0;
+                }
+            }
+            if (document.body.offsetHeight < (top + self.offsetHeight)) {
+                top = document.body.offsetHeight - self.offsetHeight - 90;
+                if (top < 0) {
+                    top = 0;
+                }
+            }
+            setStyles([self], {
+                position: 'absolute',
+                left: left + 'px',
+                top: top + 'px'
+            });
+        }
+
+        this.events.onClick.push([self, event => event.stopPropagation()]);
+        this.events.onClick.push([targetElement, show]);
+        this.events.onHide.push(self);
+
+        this.setup = function() {
+            setStyles([self], styles);
+            for (const element of options) {
+                self.appendChild(element);
+            }
+            document.body.appendChild(self);
+        };
+    }
 
     const styles = {
         body: {
@@ -414,23 +408,16 @@ document.addEventListener('DOMContentLoaded', function() {
     };
 
     const aboutOptionElement = document.createElement('li');
-    const backgroundImageElement = document.createElement('li');
-    const components = [
-        new AboutComponent(styles.options, aboutOptionElement),
-        new BackgroundImageComponent(backgroundImageElement)
-    ];
-
-    const backgroundOptionsElement = document.createElement('ul');
     const backgroundColorElement = document.createElement('li');
     const backgroundColorLabelElement = document.createElement('label');
     const backgroundColorInputElement = document.createElement('input');
-    const timeElement = document.createElement('span');
-    const timeOptionsElement = document.createElement('ul');
+    const backgroundImageComponent = new BackgroundImageComponent();
     const timeAlignElement = document.createElement('li');
     const timeAlignTableElement = document.createElement('table');
     const timeColorElement = document.createElement('li');
     const timeColorLabelElement = document.createElement('label');
     const timeColorInputElement = document.createElement('input');
+    const timeElement = document.createElement('span');
     const timeFontElement = document.createElement('li');
     const timeFontLabelElement = document.createElement('label');
     const timeFontSelectElement = document.createElement('select');
@@ -439,6 +426,21 @@ document.addEventListener('DOMContentLoaded', function() {
     const timeSizeSetElement = document.createElement('fieldset');
     const timeSizeInputElement = document.createElement('input');
     const timeSizeSelectElement = document.createElement('select');
+    const components = [
+        new AboutComponent(styles.options, aboutOptionElement),
+        backgroundImageComponent,
+        new OptionComponent(styles.options, document.body, [
+            backgroundColorElement,
+            backgroundImageComponent.elements.self
+        ]),
+        new OptionComponent(styles.options, timeElement, [
+            timeAlignElement,
+            timeColorElement,
+            timeFontElement,
+            timeSizeElement
+        ])
+    ];
+
 
     // prepare events
     setInterval(updateTime, 1000);
@@ -452,14 +454,10 @@ document.addEventListener('DOMContentLoaded', function() {
     }
     for (const [element, callback] of [
         [backgroundColorElement, showElement(backgroundColorInputElement)],
-        [backgroundOptionsElement, event => event.stopPropagation()],
-        [document.body, showOptions(backgroundOptionsElement)],
-        [timeElement, showOptions(timeOptionsElement)],
         [timeAlignElement, showTimeAlignOptions],
         [timeColorElement, showElement(timeColorInputElement)],
         [timeFontLabelElement, showElement(timeFontSelectElement)],
-        [timeSizeElement, showElement(timeSizeSetElement)],
-        [timeOptionsElement, event => event.stopPropagation()]
+        [timeSizeElement, showElement(timeSizeSetElement)]
     ]) {
         element.onclick = callback;
     }
