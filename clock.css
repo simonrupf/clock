@@ -60,9 +60,6 @@ ul, div {
 }
 
 .clock {
-    --timeShiftHour: calc(var(--setTimeHour) * var(--hour));
-    --timeShiftMinute: calc(var(--setTimeMinute) * var(--minute));
-    --timeShiftSecond: calc(var(--setTimeSecond) * var(--second));
     width: 15em;
     height: 15em;
     border-radius: 50%;
@@ -106,15 +103,12 @@ ul, div {
 
 .second.hand {
     animation: rotate steps(60) var(--minute) infinite;
-    animation-delay: calc(var(--timeShiftSecond) * -1);
 }
 
 .minute.hand {
     animation: rotate linear var(--hour) infinite;
-    animation-delay: calc(var(--timeShiftMinute) * -1);
 }
 
 .hour.hand {
     animation: rotate linear calc(var(--hour) * 12) infinite;
-    animation-delay: calc((var(--timeShiftHour) + var(--timeShiftMinute)) * -1);
 }

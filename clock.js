@@ -73,7 +73,23 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 
     function updateTime() {
-        timeElement.textContent = (new Date()).toLocaleTimeString();
+        const time = new Date();
+        // detect pauses in execution and re-set clock
+        const now = time.getTime();
+        if (now > (lastUpdate + 5000)) {
+            // reset animation by re-creating hands
+            for (const hand in clockHands) {
+                const resetHand = clockHands[hand].cloneNode(true);
+                clockHands[hand].parentNode.replaceChild(resetHand, clockHands[hand]);
+                clockHands[hand] = resetHand;
+            }
+            const minuteOffset = time.getMinutes() * 60;
+            clockHands['hour'].style.animationDelay   = (time.getHours() * 3600 + minuteOffset) * -1 + 's';
+            clockHands['minute'].style.animationDelay = minuteOffset * -1 + 's';
+            clockHands['second'].style.animationDelay = time.getSeconds() * -1 + 's';
+        }
+        timeElement.textContent = time.toLocaleTimeString();
+        lastUpdate = now;
     }
 
     // classes
@@ -367,6 +383,7 @@ document.addEventListener('DOMContentLoaded', function() {
     const backgroundColorComponent = new ColorComponent('background-color', '#ffffff', document.body);
     const backgroundImageComponent = new BackgroundImageComponent();
     const clockElement = document.createElement('div');
+    const clockHands = {};
     const timeElement = document.createElement('span');
     const timeAlignComponent = new AlignComponent();
     const timeColorComponent = new ColorComponent('color', '#000000', timeElement);
@@ -391,21 +408,19 @@ document.addEventListener('DOMContentLoaded', function() {
         timeFontComponent,
         timeSizeComponent
     ];
+    let lastUpdate = 0;
 
     // load DOM
-    updateTime();
-    const time = new Date();
     clockElement.className = 'clock';
-    clockElement.style.setProperty('--setTimeHour', time.getHours());
-    clockElement.style.setProperty('--setTimeMinute', time.getMinutes());
-    clockElement.style.setProperty('--setTimeSecond', time.getSeconds());
-    document.body.appendChild(clockElement);
-    document.body.appendChild(timeElement);
     for (const hand of ['hour', 'minute', 'second']) {
         const handElement = clockElement.cloneNode();
         handElement.className = hand + ' hand';
         clockElement.appendChild(handElement);
+        clockHands[hand] = handElement;
     }
+    updateTime();
+    document.body.appendChild(clockElement);
+    document.body.appendChild(timeElement);
     hideAll();
 
     // prepare events, restore or initialize persisted styles
