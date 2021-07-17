@@ -366,6 +366,7 @@ document.addEventListener('DOMContentLoaded', function() {
     const aboutComponent = new AboutComponent();
     const backgroundColorComponent = new ColorComponent('background-color', '#ffffff', document.body);
     const backgroundImageComponent = new BackgroundImageComponent();
+    const clockElement = document.createElement('div');
     const timeElement = document.createElement('span');
     const timeAlignComponent = new AlignComponent();
     const timeColorComponent = new ColorComponent('color', '#000000', timeElement);
@@ -393,7 +394,18 @@ document.addEventListener('DOMContentLoaded', function() {
 
     // load DOM
     updateTime();
+    const time = new Date();
+    clockElement.className = 'clock';
+    clockElement.style.setProperty('--setTimeHour', time.getHours());
+    clockElement.style.setProperty('--setTimeMinute', time.getMinutes());
+    clockElement.style.setProperty('--setTimeSecond', time.getSeconds());
+    document.body.appendChild(clockElement);
     document.body.appendChild(timeElement);
+    for (const hand of ['hour', 'minute', 'second']) {
+        const handElement = clockElement.cloneNode();
+        handElement.className = hand + ' hand';
+        clockElement.appendChild(handElement);
+    }
     hideAll();
 
     // prepare events, restore or initialize persisted styles
