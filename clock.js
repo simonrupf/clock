@@ -222,7 +222,6 @@ document.addEventListener('DOMContentLoaded', function() {
         this.setup = function() {
             updateProperties(this.elements.label, table, key, 'Alignment…');
             appendFormElements(this.elements, table);
-            table.style.fontFamily = 'DejaVu Sans,Symbola,Quivira';
         }
     }
 
