@@ -148,27 +148,27 @@ document.addEventListener('DOMContentLoaded', function() {
             const alignmentTable = [
                 [
                     {
-                        symbol: '⭶', hAlign: 'start', vAlign: 'start'
+                        symbol: '↖', hAlign: 'start', vAlign: 'start'
                     },{
-                        symbol: '⭱', hAlign: 'center', vAlign: 'start'
+                        symbol: '↑', hAlign: 'center', vAlign: 'start'
                     },{
-                        symbol: '⭷', hAlign: 'end', vAlign: 'start'
+                        symbol: '↗', hAlign: 'end', vAlign: 'start'
                     }
                 ],[
                     {
-                        symbol: '⭰', hAlign: 'start', vAlign: 'center'
+                        symbol: '←', hAlign: 'start', vAlign: 'center'
                     },{
                         symbol: '✛', hAlign: 'center', vAlign: 'center'
                     },{
-                        symbol: '⭲', hAlign: 'end', vAlign: 'center'
+                        symbol: '→', hAlign: 'end', vAlign: 'center'
                     }
                 ],[
                     {
-                        symbol: '⭹', hAlign: 'start', vAlign: 'end'
+                        symbol: '↙', hAlign: 'start', vAlign: 'end'
                     },{
-                        symbol: '⭳', hAlign: 'center', vAlign: 'end'
+                        symbol: '↓', hAlign: 'center', vAlign: 'end'
                     },{
-                        symbol: '⭸', hAlign: 'end', vAlign: 'end'
+                        symbol: '↘', hAlign: 'end', vAlign: 'end'
                     }
                 ]
             ];
