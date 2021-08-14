@@ -84,21 +84,21 @@ ul, div {
 }
 
 .second {
-    --width: 5px;
-    --height: 45%;
-    --color: yellow;
+    --width: 3px;
+    --height: 47%;
+    --color: red;
 }
 
 .minute {
-    --width: 10px;
-    --height: 40%;
-    --color: blue;
+    --width: 7px;
+    --height: 43%;
+    --color: black;
 }
 
 .hour {
-    --width: 10px;
+    --width: 9px;
     --height: 30%;
-    --color: darkblue;
+    --color: #333;
 }
 
 .second.hand {
