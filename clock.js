@@ -16,6 +16,25 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     }
 
+    function getClock(time) {
+        const hour = time.getHours();
+        const minute = time.getMinutes();
+
+        const minuteAngle = minute * 6; // 360° / 60 minutes = 6° per minute
+        const hourAngle = (hour % 12) * 30 + minute * 0.5; // 360° / 12 hours = 30° per hour, add .5° per minute
+        const handAngle = (360 + minuteAngle - hourAngle) % 360;
+
+        const useFullHour = minute <= 10 || minute >= 50;
+        const emoji = icons[useFullHour ? 0 : 1][Math.floor(12 / 360 * handAngle)];
+
+        let angle = (minute / 60) * 360;
+        if (!useFullHour) {
+            angle += 180;
+        }
+
+        return {icon: emoji, angle: angle % 360};
+    }
+
     function hideAll() {
         for (const component of components) {
             for (const element of component.events.onHide) {
@@ -70,6 +89,12 @@ document.addEventListener('DOMContentLoaded', function() {
         labelElement.textContent = labelText;
         labelElement.setAttribute('for', key);
         idElement.setAttribute('id', key);
+    }
+
+    function updateIcon() {
+        const emoji = getClock(new Date());
+        const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="64" height="64"><text x="50%" y="50%" dominant-baseline="middle" text-anchor="middle" font-size="48" transform="rotate(${emoji.angle} 32 32)">${emoji.icon}</text></svg>`;
+        icon.href = 'data:image/svg+xml;base64,' + encoder.encode(svg).toBase64();
     }
 
     function updateTime() {
@@ -378,6 +403,13 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     }
 
+    // polyfill for Chrome
+    if (typeof Uint8Array.prototype.toBase64 !== 'function') {
+        Uint8Array.prototype.toBase64 = function() {
+            return btoa(Array.from(this, (byte) => String.fromCodePoint(byte)).join(''));
+        }
+    }
+
     const aboutComponent = new AboutComponent();
     const backgroundColorComponent = new ColorComponent('background-color', '#ffffff', document.body);
     const backgroundImageComponent = new BackgroundImageComponent();
@@ -407,6 +439,12 @@ document.addEventListener('DOMContentLoaded', function() {
         timeFontComponent,
         timeSizeComponent
     ];
+    const encoder = new TextEncoder();
+    const icons = [
+        ['🕛','🕚','🕙','🕘','🕗','🕖','🕕','🕔','🕓','🕒','🕑','🕐'],
+        ['🕠','🕟','🕞','🕝','🕜','🕧','🕦','🕥','🕤','🕣','🕢','🕡']
+    ];
+    const icon = document.querySelector("link[rel*='icon']") || document.createElement('link');
     let lastUpdate = 0;
 
     // load DOM
@@ -417,12 +455,16 @@ document.addEventListener('DOMContentLoaded', function() {
         clockElement.appendChild(handElement);
         clockHands[hand] = handElement;
     }
+    icon.rel = 'icon';
+    icon.type = 'image/svg+xml';
+    updateIcon();
     updateTime();
     document.body.appendChild(clockElement);
     document.body.appendChild(timeElement);
     hideAll();
 
     // prepare events, restore or initialize persisted styles
+    setInterval(updateIcon, 60000);
     setInterval(updateTime, 1000);
     for (const component of components) {
         for (const [element, callback] of component.events.onClick) {
