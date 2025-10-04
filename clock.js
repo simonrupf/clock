@@ -16,25 +16,6 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     }
 
-    function getClock(time) {
-        const hour = time.getHours();
-        const minute = time.getMinutes();
-
-        const minuteAngle = minute * 6; // 360° / 60 minutes = 6° per minute
-        const hourAngle = (hour % 12) * 30 + minute * 0.5; // 360° / 12 hours = 30° per hour, add .5° per minute
-        const handAngle = (360 + minuteAngle - hourAngle) % 360;
-
-        const useFullHour = minute <= 10 || minute >= 50;
-        const emoji = icons[useFullHour ? 0 : 1][Math.floor(12 / 360 * handAngle)];
-
-        let angle = (minute / 60) * 360;
-        if (!useFullHour) {
-            angle += 180;
-        }
-
-        return {icon: emoji, angle: angle % 360};
-    }
-
     function hideAll() {
         for (const component of components) {
             for (const element of component.events.onHide) {
@@ -92,9 +73,7 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 
     function updateIcon() {
-        const emoji = getClock(new Date());
-        const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="64" height="64"><text x="50%" y="50%" dominant-baseline="middle" text-anchor="middle" font-size="48" transform="rotate(${emoji.angle} 32 32)">${emoji.icon}</text></svg>`;
-        icon.href = 'data:image/svg+xml;base64,' + encoder.encode(svg).toBase64();
+        icon.href = clockSvgFactory.build(new Date());
     }
 
     function updateTime() {
@@ -115,6 +94,13 @@ document.addEventListener('DOMContentLoaded', function() {
         }
         timeElement.textContent = time.toLocaleTimeString();
         lastUpdate = now;
+    }
+
+    // polyfill for Chrome
+    if (typeof Uint8Array.prototype.toBase64 !== 'function') {
+        Uint8Array.prototype.toBase64 = function() {
+            return btoa(Array.from(this, (byte) => String.fromCodePoint(byte)).join(''));
+        }
     }
 
     // classes
@@ -403,10 +389,23 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     }
 
-    // polyfill for Chrome
-    if (typeof Uint8Array.prototype.toBase64 !== 'function') {
-        Uint8Array.prototype.toBase64 = function() {
-            return btoa(Array.from(this, (byte) => String.fromCodePoint(byte)).join(''));
+    function ClockSvgFactory() {
+        const encoder = new TextEncoder();
+        const icons = ['🕛','🕠','🕚','🕟','🕙','🕞','🕘','🕝','🕗','🕜','🕖','🕧','🕕','🕦','🕔','🕥','🕓','🕤','🕒','🕣','🕑','🕢','🕐','🕡'];
+
+        this.build = function(time) {
+            const hour = time.getHours();
+            const minute = time.getMinutes();
+
+            const minuteAngle = minute * 6; // 360° / 60 minutes = 6° per minute
+            const hourAngle = (hour % 12) * 30 + minute * 0.5; // 360° / 12 hours = 30° per hour, add .5° per minute
+            const handAngle = (360 + minuteAngle - hourAngle) % 360;
+
+            const iconIndex = Math.floor(icons.length / 360 * handAngle);
+            // for every second index add 180° to account for the half hour clock faces
+            const angle = (minuteAngle + ((iconIndex % 2) * 180)) % 360;
+            const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="64" height="64"><text x="50%" y="50%" dominant-baseline="middle" text-anchor="middle" font-size="48" transform="rotate(${angle} 32 32)">${icons[iconIndex]}</text></svg>`;
+            return 'data:image/svg+xml;base64,' + encoder.encode(svg).toBase64();
         }
     }
 
@@ -414,6 +413,7 @@ document.addEventListener('DOMContentLoaded', function() {
     const backgroundColorComponent = new ColorComponent('background-color', '#ffffff', document.body);
     const backgroundImageComponent = new BackgroundImageComponent();
     const clockElement = document.createElement('div');
+    const clockSvgFactory = new ClockSvgFactory();
     const clockHands = {};
     const timeElement = document.createElement('span');
     const timeAlignComponent = new AlignComponent();
@@ -438,11 +438,6 @@ document.addEventListener('DOMContentLoaded', function() {
         timeColorComponent,
         timeFontComponent,
         timeSizeComponent
-    ];
-    const encoder = new TextEncoder();
-    const icons = [
-        ['🕛','🕚','🕙','🕘','🕗','🕖','🕕','🕔','🕓','🕒','🕑','🕐'],
-        ['🕠','🕟','🕞','🕝','🕜','🕧','🕦','🕥','🕤','🕣','🕢','🕡']
     ];
     const icon = document.querySelector("link[rel*='icon']") || document.createElement('link');
     let lastUpdate = 0;
